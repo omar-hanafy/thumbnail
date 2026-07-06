@@ -66,8 +66,7 @@ class RequestScheduler {
   }
 
   /// Jobs waiting for a slot.
-  int get queueDepth =>
-      _visible.length + _normal.length + _prefetch.length;
+  int get queueDepth => _visible.length + _normal.length + _prefetch.length;
 
   /// Workers currently running.
   int get activeCount => _active;
@@ -100,18 +99,18 @@ class RequestScheduler {
   int _detachedRunning = 0;
 
   List<_Job<Object?>> _bandOf(ThumbnailPriority priority) => switch (priority) {
-        ThumbnailPriority.visible => _visible,
-        ThumbnailPriority.normal => _normal,
-        ThumbnailPriority.prefetch => _prefetch,
-      };
+    ThumbnailPriority.visible => _visible,
+    ThumbnailPriority.normal => _normal,
+    ThumbnailPriority.prefetch => _prefetch,
+  };
 
   void _pump() {
     while (_active < _maxConcurrent) {
       final band = _visible.isNotEmpty
           ? _visible
           : _normal.isNotEmpty
-              ? _normal
-              : _prefetch;
+          ? _normal
+          : _prefetch;
       if (band.isEmpty) return;
       final job = band.removeLast();
       _run(job);
@@ -133,34 +132,37 @@ class RequestScheduler {
       });
     }
 
-    Future<Object?>(() => job.worker()).then((result) {
-      timeoutTimer?.cancel();
-      if (job._detached) {
-        _detachedRunning--;
-        onOrphanResult?.call(job.key, result);
-      } else {
-        _finish(job);
-        job._complete(result);
-      }
-      _pump();
-    }, onError: (Object error, StackTrace stack) {
-      timeoutTimer?.cancel();
-      final wrapped = error is ThumbnailException
-          ? error
-          : ThumbnailException(
-              ThumbnailErrorCode.extractionFailed,
-              'worker failed: $error',
-              cause: error,
-            );
-      if (job._detached) {
-        _detachedRunning--;
-        // Late failures of detached workers are dropped by design.
-      } else {
-        _finish(job);
-        job._completeError(wrapped, stack);
-      }
-      _pump();
-    });
+    Future<Object?>(() => job.worker()).then(
+      (result) {
+        timeoutTimer?.cancel();
+        if (job._detached) {
+          _detachedRunning--;
+          onOrphanResult?.call(job.key, result);
+        } else {
+          _finish(job);
+          job._complete(result);
+        }
+        _pump();
+      },
+      onError: (Object error, StackTrace stack) {
+        timeoutTimer?.cancel();
+        final wrapped = error is ThumbnailException
+            ? error
+            : ThumbnailException(
+                ThumbnailErrorCode.extractionFailed,
+                'worker failed: $error',
+                cause: error,
+              );
+        if (job._detached) {
+          _detachedRunning--;
+          // Late failures of detached workers are dropped by design.
+        } else {
+          _finish(job);
+          job._completeError(wrapped, stack);
+        }
+        _pump();
+      },
+    );
   }
 
   void _finish(_Job<Object?> job) {

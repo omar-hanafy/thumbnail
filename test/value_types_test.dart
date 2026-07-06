@@ -4,7 +4,10 @@ import 'package:thumbnail/thumbnail.dart';
 void main() {
   group('VideoSource', () {
     test('asset factory creates AssetVideoSource with key and package', () {
-      final source = VideoSource.asset('assets/videos/intro.mp4', package: 'my_pkg');
+      final source = VideoSource.asset(
+        'assets/videos/intro.mp4',
+        package: 'my_pkg',
+      );
       expect(source, isA<AssetVideoSource>());
       final asset = source as AssetVideoSource;
       expect(asset.assetKey, 'assets/videos/intro.mp4');
@@ -19,7 +22,10 @@ void main() {
 
     test('network factory creates NetworkVideoSource with headers', () {
       final url = Uri.parse('https://cdn.example.com/v.mp4');
-      final source = VideoSource.network(url, headers: {'Authorization': 'Bearer x'});
+      final source = VideoSource.network(
+        url,
+        headers: {'Authorization': 'Bearer x'},
+      );
       expect(source, isA<NetworkVideoSource>());
       final net = source as NetworkVideoSource;
       expect(net.url, url);
@@ -28,29 +34,49 @@ void main() {
 
     test('asset equality covers key and package', () {
       expect(VideoSource.asset('a.mp4'), equals(VideoSource.asset('a.mp4')));
-      expect(VideoSource.asset('a.mp4', package: 'p'),
-          isNot(equals(VideoSource.asset('a.mp4'))));
-      expect(VideoSource.asset('a.mp4'), isNot(equals(VideoSource.asset('b.mp4'))));
+      expect(
+        VideoSource.asset('a.mp4', package: 'p'),
+        isNot(equals(VideoSource.asset('a.mp4'))),
+      );
+      expect(
+        VideoSource.asset('a.mp4'),
+        isNot(equals(VideoSource.asset('b.mp4'))),
+      );
     });
 
     test('file equality covers path', () {
       expect(VideoSource.file('/a.mp4'), equals(VideoSource.file('/a.mp4')));
-      expect(VideoSource.file('/a.mp4'), isNot(equals(VideoSource.file('/b.mp4'))));
+      expect(
+        VideoSource.file('/a.mp4'),
+        isNot(equals(VideoSource.file('/b.mp4'))),
+      );
     });
 
     test('network equality is over the url and ignores headers', () {
       final url = Uri.parse('https://cdn.example.com/v.mp4');
-      expect(VideoSource.network(url, headers: {'a': '1'}),
-          equals(VideoSource.network(url, headers: {'b': '2'})));
-      expect(VideoSource.network(url),
-          isNot(equals(VideoSource.network(Uri.parse('https://cdn.example.com/w.mp4')))));
+      expect(
+        VideoSource.network(url, headers: {'a': '1'}),
+        equals(VideoSource.network(url, headers: {'b': '2'})),
+      );
+      expect(
+        VideoSource.network(url),
+        isNot(
+          equals(
+            VideoSource.network(Uri.parse('https://cdn.example.com/w.mp4')),
+          ),
+        ),
+      );
     });
 
     test('network rejects non-http schemes', () {
-      expect(() => VideoSource.network(Uri.parse('ftp://x/v.mp4')),
-          throwsArgumentError);
-      expect(() => VideoSource.network(Uri.parse('file:///v.mp4')),
-          throwsArgumentError);
+      expect(
+        () => VideoSource.network(Uri.parse('ftp://x/v.mp4')),
+        throwsArgumentError,
+      );
+      expect(
+        () => VideoSource.network(Uri.parse('file:///v.mp4')),
+        throwsArgumentError,
+      );
     });
 
     test('file rejects relative and empty paths', () {
@@ -63,12 +89,16 @@ void main() {
     });
 
     test('describe is human readable', () {
-      expect(VideoSource.asset('a.mp4', package: 'p').describe(), 'asset:p/a.mp4');
+      expect(
+        VideoSource.asset('a.mp4', package: 'p').describe(),
+        'asset:p/a.mp4',
+      );
       expect(VideoSource.asset('a.mp4').describe(), 'asset:a.mp4');
       expect(VideoSource.file('/x/v.mp4').describe(), 'file:/x/v.mp4');
       expect(
-          VideoSource.network(Uri.parse('https://c.io/v.mp4')).describe(),
-          'url:https://c.io/v.mp4');
+        VideoSource.network(Uri.parse('https://c.io/v.mp4')).describe(),
+        'url:https://c.io/v.mp4',
+      );
     });
   });
 
@@ -88,10 +118,20 @@ void main() {
       const b = ThumbnailSpec(maxWidth: 320, maxHeight: 320, quality: 70);
       expect(a, equals(b));
       expect(a.hashCode, b.hashCode);
-      expect(a, isNot(equals(const ThumbnailSpec(maxWidth: 321, maxHeight: 320, quality: 70))));
+      expect(
+        a,
+        isNot(
+          equals(
+            const ThumbnailSpec(maxWidth: 321, maxHeight: 320, quality: 70),
+          ),
+        ),
+      );
       expect(a, isNot(equals(a.copyWith(exact: true))));
       expect(a, isNot(equals(a.copyWith(format: ThumbnailFormat.png))));
-      expect(a, isNot(equals(a.copyWith(position: const Duration(seconds: 1)))));
+      expect(
+        a,
+        isNot(equals(a.copyWith(position: const Duration(seconds: 1)))),
+      );
     });
 
     test('copyWith replaces only the given fields', () {
@@ -104,12 +144,18 @@ void main() {
 
     test('validation rejects bad values', () {
       expect(() => ThumbnailSpec(maxWidth: -1).validate(), throwsArgumentError);
-      expect(() => ThumbnailSpec(maxHeight: -5).validate(), throwsArgumentError);
+      expect(
+        () => ThumbnailSpec(maxHeight: -5).validate(),
+        throwsArgumentError,
+      );
       expect(() => ThumbnailSpec(quality: 0).validate(), throwsArgumentError);
       expect(() => ThumbnailSpec(quality: 101).validate(), throwsArgumentError);
       expect(
-          () => ThumbnailSpec(position: const Duration(milliseconds: -1)).validate(),
-          throwsArgumentError);
+        () => ThumbnailSpec(
+          position: const Duration(milliseconds: -1),
+        ).validate(),
+        throwsArgumentError,
+      );
       expect(() => const ThumbnailSpec().validate(), returnsNormally);
     });
   });
@@ -128,7 +174,11 @@ void main() {
   group('Thumbnail', () {
     test('holds result fields', () {
       const t = Thumbnail(
-          filePath: '/c/x.jpg', width: 320, height: 180, wasCached: true);
+        filePath: '/c/x.jpg',
+        width: 320,
+        height: 180,
+        wasCached: true,
+      );
       expect(t.filePath, '/c/x.jpg');
       expect(t.width, 320);
       expect(t.height, 180);
@@ -139,8 +189,14 @@ void main() {
 
   group('ThumbnailPriority', () {
     test('orders prefetch < normal < visible', () {
-      expect(ThumbnailPriority.prefetch.index < ThumbnailPriority.normal.index, isTrue);
-      expect(ThumbnailPriority.normal.index < ThumbnailPriority.visible.index, isTrue);
+      expect(
+        ThumbnailPriority.prefetch.index < ThumbnailPriority.normal.index,
+        isTrue,
+      );
+      expect(
+        ThumbnailPriority.normal.index < ThumbnailPriority.visible.index,
+        isTrue,
+      );
     });
   });
 
@@ -153,7 +209,11 @@ void main() {
 
     test('carries an optional cause', () {
       final cause = Exception('inner');
-      final e = ThumbnailException(ThumbnailErrorCode.io, 'outer', cause: cause);
+      final e = ThumbnailException(
+        ThumbnailErrorCode.io,
+        'outer',
+        cause: cause,
+      );
       expect(e.cause, same(cause));
       expect(e.toString(), contains('inner'));
     });

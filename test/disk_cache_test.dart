@@ -17,12 +17,17 @@ void main() {
         now: () => fakeNow,
       );
 
-  Future<CacheKey> keyFor(String asset,
-          {ThumbnailSpec spec = const ThumbnailSpec()}) =>
-      CacheKey.compute(VideoSource.asset(asset), spec);
+  Future<CacheKey> keyFor(
+    String asset, {
+    ThumbnailSpec spec = const ThumbnailSpec(),
+  }) => CacheKey.compute(VideoSource.asset(asset), spec);
 
   /// Simulates a native extraction: writes [size] bytes into the temp path.
-  Future<String> fakeExtract(DiskCache cache, CacheKey key, {int size = 100}) async {
+  Future<String> fakeExtract(
+    DiskCache cache,
+    CacheKey key, {
+    int size = 100,
+  }) async {
     final temp = cache.tempPathFor(key);
     await File(temp).writeAsBytes(List.filled(size, 1));
     return temp;
@@ -45,21 +50,28 @@ void main() {
     expect(cache.totalBytes, 0);
   });
 
-  test('init removes orphaned .part files and keeps committed entries', () async {
-    final a = newCache();
-    await a.init();
-    final key = await keyFor('v.mp4');
-    await a.commit(key, await fakeExtract(a, key), width: 32, height: 18);
-    File('${root.path}/cache/orphan.1234abcd.part')
-        .writeAsBytesSync(List.filled(10, 9));
+  test(
+    'init removes orphaned .part files and keeps committed entries',
+    () async {
+      final a = newCache();
+      await a.init();
+      final key = await keyFor('v.mp4');
+      await a.commit(key, await fakeExtract(a, key), width: 32, height: 18);
+      File(
+        '${root.path}/cache/orphan.1234abcd.part',
+      ).writeAsBytesSync(List.filled(10, 9));
 
-    final b = newCache();
-    await b.init();
-    expect(File('${root.path}/cache/orphan.1234abcd.part').existsSync(), isFalse);
-    expect(lookupPath(b, key), isNotNull);
-    expect(b.entryCount, 1);
-    expect(b.totalBytes, 100);
-  });
+      final b = newCache();
+      await b.init();
+      expect(
+        File('${root.path}/cache/orphan.1234abcd.part').existsSync(),
+        isFalse,
+      );
+      expect(lookupPath(b, key), isNotNull);
+      expect(b.entryCount, 1);
+      expect(b.totalBytes, 100);
+    },
+  );
 
   test('commit renames atomically and lookup hits afterwards', () async {
     final cache = newCache();
@@ -83,16 +95,28 @@ void main() {
     expect(cache.entryCount, 1);
   });
 
-  test('double commit of the same key keeps one entry with the new size',
-      () async {
-    final cache = newCache();
-    await cache.init();
-    final key = await keyFor('v.mp4');
-    await cache.commit(key, await fakeExtract(cache, key, size: 100), width: 32, height: 18);
-    await cache.commit(key, await fakeExtract(cache, key, size: 250), width: 64, height: 36);
-    expect(cache.entryCount, 1);
-    expect(cache.totalBytes, 250);
-  });
+  test(
+    'double commit of the same key keeps one entry with the new size',
+    () async {
+      final cache = newCache();
+      await cache.init();
+      final key = await keyFor('v.mp4');
+      await cache.commit(
+        key,
+        await fakeExtract(cache, key, size: 100),
+        width: 32,
+        height: 18,
+      );
+      await cache.commit(
+        key,
+        await fakeExtract(cache, key, size: 250),
+        width: 64,
+        height: 36,
+      );
+      expect(cache.entryCount, 1);
+      expect(cache.totalBytes, 250);
+    },
+  );
 
   test('commit with a missing temp file throws io', () async {
     final cache = newCache();
@@ -100,31 +124,43 @@ void main() {
     final key = await keyFor('v.mp4');
     expect(
       () => cache.commit(key, cache.tempPathFor(key), width: 1, height: 1),
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.io)),
+      throwsA(
+        isA<ThumbnailException>().having(
+          (e) => e.code,
+          'code',
+          ThumbnailErrorCode.io,
+        ),
+      ),
     );
   });
 
-  test('evicts least recently used entries down to the byte watermark',
-      () async {
-    final cache = newCache(maxBytes: 350);
-    await cache.init();
-    final keys = <CacheKey>[];
-    for (var i = 0; i < 5; i++) {
-      final key = await keyFor('v$i.mp4');
-      keys.add(key);
-      await cache.commit(key, await fakeExtract(cache, key), width: 32, height: 18);
-      fakeNow = fakeNow.add(const Duration(minutes: 1));
-    }
-    await cache.evictIfNeeded();
+  test(
+    'evicts least recently used entries down to the byte watermark',
+    () async {
+      final cache = newCache(maxBytes: 350);
+      await cache.init();
+      final keys = <CacheKey>[];
+      for (var i = 0; i < 5; i++) {
+        final key = await keyFor('v$i.mp4');
+        keys.add(key);
+        await cache.commit(
+          key,
+          await fakeExtract(cache, key),
+          width: 32,
+          height: 18,
+        );
+        fakeNow = fakeNow.add(const Duration(minutes: 1));
+      }
+      await cache.evictIfNeeded();
 
-    // Watermark is 90% of 350 = 315 bytes -> 3 entries of 100 bytes remain.
-    expect(cache.totalBytes, 300);
-    expect(cache.entryCount, 3);
-    expect(lookupPath(cache, keys[0]), isNull, reason: 'oldest evicted');
-    expect(lookupPath(cache, keys[1]), isNull);
-    expect(lookupPath(cache, keys[4]), isNotNull, reason: 'newest kept');
-  });
+      // Watermark is 90% of 350 = 315 bytes -> 3 entries of 100 bytes remain.
+      expect(cache.totalBytes, 300);
+      expect(cache.entryCount, 3);
+      expect(lookupPath(cache, keys[0]), isNull, reason: 'oldest evicted');
+      expect(lookupPath(cache, keys[1]), isNull);
+      expect(lookupPath(cache, keys[4]), isNotNull, reason: 'newest kept');
+    },
+  );
 
   test('lookup refreshes recency so hot entries survive eviction', () async {
     final cache = newCache(maxBytes: 350);
@@ -133,7 +169,12 @@ void main() {
     for (var i = 0; i < 3; i++) {
       final key = await keyFor('v$i.mp4');
       keys.add(key);
-      await cache.commit(key, await fakeExtract(cache, key), width: 32, height: 18);
+      await cache.commit(
+        key,
+        await fakeExtract(cache, key),
+        width: 32,
+        height: 18,
+      );
       fakeNow = fakeNow.add(const Duration(minutes: 1));
     }
     // Touch the oldest so it becomes the hottest.
@@ -155,7 +196,12 @@ void main() {
     await cache.init();
     for (var i = 0; i < 5; i++) {
       final key = await keyFor('v$i.mp4');
-      await cache.commit(key, await fakeExtract(cache, key, size: 1), width: 32, height: 18);
+      await cache.commit(
+        key,
+        await fakeExtract(cache, key, size: 1),
+        width: 32,
+        height: 18,
+      );
       fakeNow = fakeNow.add(const Duration(minutes: 1));
     }
     await cache.evictIfNeeded();
@@ -170,11 +216,18 @@ void main() {
     final cache = newCache();
     await cache.init();
     final a1 = await keyFor('a.mp4');
-    final a2 = await keyFor('a.mp4',
-        spec: const ThumbnailSpec(maxWidth: 100, maxHeight: 100));
+    final a2 = await keyFor(
+      'a.mp4',
+      spec: const ThumbnailSpec(maxWidth: 100, maxHeight: 100),
+    );
     final b1 = await keyFor('b.mp4');
     for (final key in [a1, a2, b1]) {
-      await cache.commit(key, await fakeExtract(cache, key), width: 32, height: 18);
+      await cache.commit(
+        key,
+        await fakeExtract(cache, key),
+        width: 32,
+        height: 18,
+      );
     }
     expect(a1.sourcePrefix, a2.sourcePrefix);
 
@@ -190,7 +243,12 @@ void main() {
     final cache = newCache();
     await cache.init();
     final key = await keyFor('v.mp4');
-    await cache.commit(key, await fakeExtract(cache, key), width: 32, height: 18);
+    await cache.commit(
+      key,
+      await fakeExtract(cache, key),
+      width: 32,
+      height: 18,
+    );
     await cache.clear();
     expect(cache.entryCount, 0);
     expect(cache.totalBytes, 0);
@@ -202,7 +260,12 @@ void main() {
     final a = newCache();
     await a.init();
     final key = await keyFor('v.mp4');
-    await a.commit(key, await fakeExtract(a, key, size: 42), width: 32, height: 18);
+    await a.commit(
+      key,
+      await fakeExtract(a, key, size: 42),
+      width: 32,
+      height: 18,
+    );
 
     final b = newCache();
     await b.init();
@@ -218,10 +281,18 @@ void main() {
     final cache = newCache();
     await cache.init();
     final key = await keyFor('v.mp4');
-    final p1 = await cache.commit(key, await fakeExtract(cache, key),
-        width: 32, height: 18);
-    final p2 = await cache.commit(key, await fakeExtract(cache, key),
-        width: 64, height: 36);
+    final p1 = await cache.commit(
+      key,
+      await fakeExtract(cache, key),
+      width: 32,
+      height: 18,
+    );
+    final p2 = await cache.commit(
+      key,
+      await fakeExtract(cache, key),
+      width: 64,
+      height: 36,
+    );
     expect(File(p1).existsSync(), isFalse, reason: 'stale dims file removed');
     expect(File(p2).existsSync(), isTrue);
     expect(cache.lookup(key)!.width, 64);
@@ -232,8 +303,12 @@ void main() {
     final cache = newCache();
     await cache.init();
     final key = await keyFor('v.mp4');
-    final path = await cache.commit(key, await fakeExtract(cache, key),
-        width: 32, height: 18);
+    final path = await cache.commit(
+      key,
+      await fakeExtract(cache, key),
+      width: 32,
+      height: 18,
+    );
     await cache.remove(key);
     expect(cache.lookup(key), isNull);
     expect(File(path).existsSync(), isFalse);

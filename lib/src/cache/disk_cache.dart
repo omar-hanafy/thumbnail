@@ -135,7 +135,11 @@ class DiskCache {
         // Best-effort; recency survives in memory for this session anyway.
       }
     }
-    return CachedThumbnail(path: path, width: entry.width, height: entry.height);
+    return CachedThumbnail(
+      path: path,
+      width: entry.width,
+      height: entry.height,
+    );
   }
 
   /// Reserves a unique temp path for [key] inside the cache directory.
@@ -203,8 +207,7 @@ class DiskCache {
 
   /// Deletes every entry whose name starts with [sourcePrefix].
   Future<void> evictSource(String sourcePrefix) async {
-    final names =
-        _index.keys.where((n) => n.startsWith(sourcePrefix)).toList();
+    final names = _index.keys.where((n) => n.startsWith(sourcePrefix)).toList();
     for (final name in names) {
       await _deleteEntry(name);
     }

@@ -7,7 +7,10 @@ void main() {
 
   test('records and returns a failure within the ttl', () {
     var now = DateTime(2026, 1, 1);
-    final cache = NegativeCache(ttl: const Duration(seconds: 60), now: () => now);
+    final cache = NegativeCache(
+      ttl: const Duration(seconds: 60),
+      now: () => now,
+    );
     cache.record('k1', err);
     expect(cache.lookup('k1'), same(err));
 
@@ -17,7 +20,10 @@ void main() {
 
   test('expires entries after the ttl and prunes them on lookup', () {
     var now = DateTime(2026, 1, 1);
-    final cache = NegativeCache(ttl: const Duration(seconds: 60), now: () => now);
+    final cache = NegativeCache(
+      ttl: const Duration(seconds: 60),
+      now: () => now,
+    );
     cache.record('k1', err);
     now = now.add(const Duration(seconds: 61));
     expect(cache.lookup('k1'), isNull);
@@ -31,7 +37,10 @@ void main() {
 
   test('re-recording overwrites the previous error and restarts the ttl', () {
     var now = DateTime(2026, 1, 1);
-    final cache = NegativeCache(ttl: const Duration(seconds: 60), now: () => now);
+    final cache = NegativeCache(
+      ttl: const Duration(seconds: 60),
+      now: () => now,
+    );
     cache.record('k1', err);
     now = now.add(const Duration(seconds: 50));
     const err2 = ThumbnailException(ThumbnailErrorCode.timeout, 'slow');
@@ -64,8 +73,10 @@ void main() {
 
   test('never stores cancelled errors', () {
     final cache = NegativeCache(ttl: const Duration(seconds: 60));
-    const cancelled =
-        ThumbnailException(ThumbnailErrorCode.cancelled, 'user scrolled away');
+    const cancelled = ThumbnailException(
+      ThumbnailErrorCode.cancelled,
+      'user scrolled away',
+    );
     cache.record('k1', cancelled);
     expect(cache.lookup('k1'), isNull);
   });

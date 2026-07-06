@@ -73,7 +73,9 @@ void main() {
   });
 
   test('toString gives a compact summary', () {
-    final recorder = MetricsRecorder()..incRequest()..incCacheHit();
+    final recorder = MetricsRecorder()
+      ..incRequest()
+      ..incCacheHit();
     final m = recorder.snapshot(queueDepth: 0, activeJobs: 0);
     expect(m.toString(), contains('requests: 1'));
     expect(m.toString(), contains('cacheHits: 1'));

@@ -19,7 +19,10 @@ void main() {
     });
 
     test('asset without package uses empty package slot', () async {
-      final key = await CacheKey.compute(VideoSource.asset('assets/v.mp4'), spec);
+      final key = await CacheKey.compute(
+        VideoSource.asset('assets/v.mp4'),
+        spec,
+      );
       expect(key.sourceId, 'a||assets/v.mp4');
     });
 
@@ -60,8 +63,13 @@ void main() {
     test('missing file throws fileNotFound', () async {
       expect(
         () => CacheKey.compute(VideoSource.file('/nonexistent/v.mp4'), spec),
-        throwsA(isA<ThumbnailException>()
-            .having((e) => e.code, 'code', ThumbnailErrorCode.fileNotFound)),
+        throwsA(
+          isA<ThumbnailException>().having(
+            (e) => e.code,
+            'code',
+            ThumbnailErrorCode.fileNotFound,
+          ),
+        ),
       );
     });
 
@@ -85,9 +93,13 @@ void main() {
     test('png normalizes quality out of the key', () async {
       final source = VideoSource.asset('a.mp4');
       final a = await CacheKey.compute(
-          source, spec.copyWith(format: ThumbnailFormat.png, quality: 10));
+        source,
+        spec.copyWith(format: ThumbnailFormat.png, quality: 10),
+      );
       final b = await CacheKey.compute(
-          source, spec.copyWith(format: ThumbnailFormat.png, quality: 90));
+        source,
+        spec.copyWith(format: ThumbnailFormat.png, quality: 90),
+      );
       expect(a.canonical, b.canonical);
       expect(a.canonical, contains('|q100'));
     });
@@ -99,11 +111,16 @@ void main() {
         VideoSource.asset('assets/v.mp4', package: 'pkg'),
         spec,
       );
-      expect(key.fileName, matches(RegExp(r'^[a-f0-9]{16}-[a-f0-9]{24}\.jpg$')));
+      expect(
+        key.fileName,
+        matches(RegExp(r'^[a-f0-9]{16}-[a-f0-9]{24}\.jpg$')),
+      );
       expect(key.fileName, startsWith(key.sourcePrefix));
 
-      final expectedSource =
-          sha1.convert('a|pkg|assets/v.mp4'.codeUnits).toString().substring(0, 16);
+      final expectedSource = sha1
+          .convert('a|pkg|assets/v.mp4'.codeUnits)
+          .toString()
+          .substring(0, 16);
       final expectedFull = sha1
           .convert('v1|a|pkg|assets/v.mp4|320x320|p0|e0|jpeg|q80'.codeUnits)
           .toString()
@@ -118,8 +135,10 @@ void main() {
     });
 
     test('png keys use the png extension', () async {
-      final key = await CacheKey.compute(VideoSource.asset('a.mp4'),
-          spec.copyWith(format: ThumbnailFormat.png));
+      final key = await CacheKey.compute(
+        VideoSource.asset('a.mp4'),
+        spec.copyWith(format: ThumbnailFormat.png),
+      );
       expect(key.fileName, endsWith('.png'));
     });
   });

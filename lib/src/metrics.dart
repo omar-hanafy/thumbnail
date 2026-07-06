@@ -161,14 +161,20 @@ class MetricsRecorder {
       _failures[code] = (_failures[code] ?? 0) + 1;
 
   /// Records a completed extraction's timings.
-  void recordExtraction({required Duration queueWait, required Duration extract}) {
+  void recordExtraction({
+    required Duration queueWait,
+    required Duration extract,
+  }) {
     _extractions++;
     _extract.add(extract.inMicroseconds);
     _queueWait.add(queueWait.inMicroseconds);
   }
 
   /// Builds an immutable snapshot.
-  ThumbnailMetrics snapshot({required int queueDepth, required int activeJobs}) {
+  ThumbnailMetrics snapshot({
+    required int queueDepth,
+    required int activeJobs,
+  }) {
     return ThumbnailMetrics(
       requests: _requests,
       cacheHits: _cacheHits,

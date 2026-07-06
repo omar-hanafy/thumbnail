@@ -49,7 +49,10 @@ class CacheKey {
   /// File sources are stat'ed so their canonical form embeds mtime and size;
   /// a missing file throws [ThumbnailException] with
   /// [ThumbnailErrorCode.fileNotFound].
-  static Future<CacheKey> compute(VideoSource source, ThumbnailSpec spec) async {
+  static Future<CacheKey> compute(
+    VideoSource source,
+    ThumbnailSpec spec,
+  ) async {
     var version = '';
     if (source is FileVideoSource) {
       final stat = await File(source.path).stat();
@@ -71,27 +74,32 @@ class CacheKey {
       sha1.convert(_sourceIdOf(source).codeUnits).toString().substring(0, 16);
 
   static String _sourceIdOf(VideoSource source) => switch (source) {
-        AssetVideoSource(:final assetKey, :final package) =>
-          'a|${package ?? ''}|$assetKey',
-        FileVideoSource(:final path) => 'f|$path',
-        NetworkVideoSource(:final url) => 'n|$url',
-      };
+    AssetVideoSource(:final assetKey, :final package) =>
+      'a|${package ?? ''}|$assetKey',
+    FileVideoSource(:final path) => 'f|$path',
+    NetworkVideoSource(:final url) => 'n|$url',
+  };
 
   static CacheKey _build(String sourceId, String version, ThumbnailSpec spec) {
     // PNG ignores quality, so normalize it out of the identity to avoid
     // duplicate cache entries that differ only by an irrelevant field.
     final quality = spec.format == ThumbnailFormat.png ? 100 : spec.quality;
     final versionSegment = version.isEmpty ? '' : '|$version';
-    final canonical = '$cacheSchemaVersion|$sourceId$versionSegment'
+    final canonical =
+        '$cacheSchemaVersion|$sourceId$versionSegment'
         '|${spec.maxWidth}x${spec.maxHeight}'
         '|p${spec.position.inMilliseconds}'
         '|e${spec.exact ? 1 : 0}'
         '|${spec.format.wireName}'
         '|q$quality';
-    final sourcePrefix =
-        sha1.convert(sourceId.codeUnits).toString().substring(0, 16);
-    final fullHash =
-        sha1.convert(canonical.codeUnits).toString().substring(0, 24);
+    final sourcePrefix = sha1
+        .convert(sourceId.codeUnits)
+        .toString()
+        .substring(0, 16);
+    final fullHash = sha1
+        .convert(canonical.codeUnits)
+        .toString()
+        .substring(0, 24);
     return CacheKey._(
       canonical: canonical,
       sourceId: sourceId,

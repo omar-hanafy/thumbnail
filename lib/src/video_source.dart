@@ -45,7 +45,8 @@ final class AssetVideoSource extends VideoSource {
   final String? package;
 
   @override
-  String describe() => package == null ? 'asset:$assetKey' : 'asset:$package/$assetKey';
+  String describe() =>
+      package == null ? 'asset:$assetKey' : 'asset:$package/$assetKey';
 
   @override
   bool operator ==(Object other) =>
@@ -73,7 +74,8 @@ final class FileVideoSource extends VideoSource {
   String describe() => 'file:$path';
 
   @override
-  bool operator ==(Object other) => other is FileVideoSource && other.path == path;
+  bool operator ==(Object other) =>
+      other is FileVideoSource && other.path == path;
 
   @override
   int get hashCode => Object.hash(FileVideoSource, path);
@@ -83,9 +85,13 @@ final class FileVideoSource extends VideoSource {
 final class NetworkVideoSource extends VideoSource {
   /// Creates a network source; [url] must use the http or https scheme.
   NetworkVideoSource(this.url, {Map<String, String>? headers})
-      : headers = headers == null ? null : Map.unmodifiable(headers) {
+    : headers = headers == null ? null : Map.unmodifiable(headers) {
     if (url.scheme != 'http' && url.scheme != 'https') {
-      throw ArgumentError.value(url, 'url', 'must use the http or https scheme');
+      throw ArgumentError.value(
+        url,
+        'url',
+        'must use the http or https scheme',
+      );
     }
   }
 
@@ -99,7 +105,8 @@ final class NetworkVideoSource extends VideoSource {
   String describe() => 'url:$url';
 
   @override
-  bool operator ==(Object other) => other is NetworkVideoSource && other.url == url;
+  bool operator ==(Object other) =>
+      other is NetworkVideoSource && other.url == url;
 
   @override
   int get hashCode => Object.hash(NetworkVideoSource, url);

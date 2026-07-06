@@ -30,7 +30,12 @@ void main() {
     final workers = List.generate(4, (_) => ControlledWorker());
     final jobs = [
       for (var i = 0; i < 4; i++)
-        scheduler.submit('k$i', ThumbnailPriority.normal, _long, workers[i].call)
+        scheduler.submit(
+          'k$i',
+          ThumbnailPriority.normal,
+          _long,
+          workers[i].call,
+        ),
     ];
     await pumpEventQueue();
 
@@ -87,7 +92,12 @@ void main() {
       return name;
     }
 
-    scheduler.submit('p', ThumbnailPriority.prefetch, _long, () => tracked('p'));
+    scheduler.submit(
+      'p',
+      ThumbnailPriority.prefetch,
+      _long,
+      () => tracked('p'),
+    );
     scheduler.submit('n', ThumbnailPriority.normal, _long, () => tracked('n'));
     scheduler.submit('v', ThumbnailPriority.visible, _long, () => tracked('v'));
     blocker.finish('x');
@@ -102,18 +112,28 @@ void main() {
     await pumpEventQueue();
 
     var ran = false;
-    final job = scheduler.submit('k', ThumbnailPriority.normal, _long, () async {
-      ran = true;
-      return 'x';
-    });
+    final job = scheduler.submit(
+      'k',
+      ThumbnailPriority.normal,
+      _long,
+      () async {
+        ran = true;
+        return 'x';
+      },
+    );
     expect(scheduler.queueDepth, 1);
     job.cancel();
     expect(scheduler.queueDepth, 0);
 
     await expectLater(
       job.future,
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.cancelled)),
+      throwsA(
+        isA<ThumbnailException>().having(
+          (e) => e.code,
+          'code',
+          ThumbnailErrorCode.cancelled,
+        ),
+      ),
     );
     blocker.finish('x');
     await scheduler.drain();
@@ -121,30 +141,42 @@ void main() {
     expect(scheduler.existing('k'), isNull);
   });
 
-  test('cancelling a running job detaches it; a successful orphan result is reported',
-      () async {
-    final orphans = <(String, Object?)>[];
-    final scheduler = RequestScheduler(
-      maxConcurrent: 1,
-      onOrphanResult: (key, result) => orphans.add((key, result)),
-    );
-    final worker = ControlledWorker();
-    final job = scheduler.submit('k', ThumbnailPriority.normal, _long, worker.call);
-    await pumpEventQueue();
-    expect(job.isRunning, isTrue);
+  test(
+    'cancelling a running job detaches it; a successful orphan result is reported',
+    () async {
+      final orphans = <(String, Object?)>[];
+      final scheduler = RequestScheduler(
+        maxConcurrent: 1,
+        onOrphanResult: (key, result) => orphans.add((key, result)),
+      );
+      final worker = ControlledWorker();
+      final job = scheduler.submit(
+        'k',
+        ThumbnailPriority.normal,
+        _long,
+        worker.call,
+      );
+      await pumpEventQueue();
+      expect(job.isRunning, isTrue);
 
-    job.cancel();
-    await expectLater(
-      job.future,
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.cancelled)),
-    );
-    expect(scheduler.existing('k'), isNull);
+      job.cancel();
+      await expectLater(
+        job.future,
+        throwsA(
+          isA<ThumbnailException>().having(
+            (e) => e.code,
+            'code',
+            ThumbnailErrorCode.cancelled,
+          ),
+        ),
+      );
+      expect(scheduler.existing('k'), isNull);
 
-    worker.finish('late-result');
-    await scheduler.drain();
-    expect(orphans, [('k', 'late-result')]);
-  });
+      worker.finish('late-result');
+      await scheduler.drain();
+      expect(orphans, [('k', 'late-result')]);
+    },
+  );
 
   test('a failed detached worker does not report an orphan result', () async {
     final orphans = <(String, Object?)>[];
@@ -153,7 +185,12 @@ void main() {
       onOrphanResult: (key, result) => orphans.add((key, result)),
     );
     final worker = ControlledWorker();
-    final job = scheduler.submit('k', ThumbnailPriority.normal, _long, worker.call);
+    final job = scheduler.submit(
+      'k',
+      ThumbnailPriority.normal,
+      _long,
+      worker.call,
+    );
     await pumpEventQueue();
     job.cancel();
     await expectLater(job.future, throwsA(isA<ThumbnailException>()));
@@ -175,7 +212,12 @@ void main() {
       return name;
     }
 
-    final a = scheduler.submit('a', ThumbnailPriority.prefetch, _long, () => tracked('a'));
+    final a = scheduler.submit(
+      'a',
+      ThumbnailPriority.prefetch,
+      _long,
+      () => tracked('a'),
+    );
     scheduler.submit('b', ThumbnailPriority.normal, _long, () => tracked('b'));
     a.bump(ThumbnailPriority.visible);
     blocker.finish('x');
@@ -215,8 +257,12 @@ void main() {
     fakeAsync((async) {
       final scheduler = RequestScheduler(maxConcurrent: 1);
       // Occupy the slot for 3s.
-      scheduler.submit('blocker', ThumbnailPriority.normal, _long,
-          () => Future.delayed(const Duration(seconds: 3), () => 'x'));
+      scheduler.submit(
+        'blocker',
+        ThumbnailPriority.normal,
+        _long,
+        () => Future.delayed(const Duration(seconds: 3), () => 'x'),
+      );
       // 1s timeout, but it will wait ~3s in the queue first.
       final job = scheduler.submit(
         'k',
@@ -234,7 +280,12 @@ void main() {
   test('existing returns the live job and null once finished', () async {
     final scheduler = RequestScheduler(maxConcurrent: 1);
     final worker = ControlledWorker();
-    final job = scheduler.submit('k', ThumbnailPriority.normal, _long, worker.call);
+    final job = scheduler.submit(
+      'k',
+      ThumbnailPriority.normal,
+      _long,
+      worker.call,
+    );
     expect(scheduler.existing('k'), same(job));
     await pumpEventQueue();
     expect(scheduler.existing('k'), same(job));
@@ -243,23 +294,39 @@ void main() {
     expect(scheduler.existing('k'), isNull);
   });
 
-  test('ThumbnailException from workers propagates untouched; other errors are wrapped',
-      () async {
-    final scheduler = RequestScheduler(maxConcurrent: 2);
-    const original = ThumbnailException(ThumbnailErrorCode.network, '404');
-    final a = scheduler.submit(
-        'a', ThumbnailPriority.normal, _long, () async => throw original);
-    await expectLater(a.future, throwsA(same(original)));
+  test(
+    'ThumbnailException from workers propagates untouched; other errors are wrapped',
+    () async {
+      final scheduler = RequestScheduler(maxConcurrent: 2);
+      const original = ThumbnailException(ThumbnailErrorCode.network, '404');
+      final a = scheduler.submit(
+        'a',
+        ThumbnailPriority.normal,
+        _long,
+        () async => throw original,
+      );
+      await expectLater(a.future, throwsA(same(original)));
 
-    final b = scheduler.submit(
-        'b', ThumbnailPriority.normal, _long, () async => throw StateError('x'));
-    await expectLater(
-      b.future,
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.extractionFailed)
-          .having((e) => e.cause, 'cause', isA<StateError>())),
-    );
-  });
+      final b = scheduler.submit(
+        'b',
+        ThumbnailPriority.normal,
+        _long,
+        () async => throw StateError('x'),
+      );
+      await expectLater(
+        b.future,
+        throwsA(
+          isA<ThumbnailException>()
+              .having(
+                (e) => e.code,
+                'code',
+                ThumbnailErrorCode.extractionFailed,
+              )
+              .having((e) => e.cause, 'cause', isA<StateError>()),
+        ),
+      );
+    },
+  );
 
   test('raising maxConcurrent dispatches queued work immediately', () async {
     final scheduler = RequestScheduler(maxConcurrent: 1);

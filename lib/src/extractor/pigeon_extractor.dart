@@ -14,11 +14,19 @@ ExtractRequest buildExtractRequest({
   required String destPath,
 }) {
   final (kind, value, package, headers) = switch (source) {
-    AssetVideoSource(:final assetKey, :final package) =>
-      (SourceKind.asset, assetKey, package, null),
+    AssetVideoSource(:final assetKey, :final package) => (
+      SourceKind.asset,
+      assetKey,
+      package,
+      null,
+    ),
     FileVideoSource(:final path) => (SourceKind.file, path, null, null),
-    NetworkVideoSource(:final url, :final headers) =>
-      (SourceKind.network, url.toString(), null, headers),
+    NetworkVideoSource(:final url, :final headers) => (
+      SourceKind.network,
+      url.toString(),
+      null,
+      headers,
+    ),
   };
   return ExtractRequest(
     requestId: requestId,

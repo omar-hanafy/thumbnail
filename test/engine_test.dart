@@ -65,35 +65,45 @@ void main() {
   test('different specs of one source extract separately', () async {
     final engine = newEngine();
     await engine.getThumbnail(asset);
-    await engine.getThumbnail(asset,
-        spec: const ThumbnailSpec(maxWidth: 100, maxHeight: 100));
+    await engine.getThumbnail(
+      asset,
+      spec: const ThumbnailSpec(maxWidth: 100, maxHeight: 100),
+    );
     expect(extractor.callCount, 2);
   });
 
-  test('cancelling the only pre-dispatch request never calls the extractor',
-      () async {
-    final engine = newEngine(
-        config: const ThumbnailEngineConfig(maxConcurrentExtractions: 1));
-    extractor.gated = true;
-    // Occupy the single slot.
-    final blocker = engine.thumbnail(VideoSource.asset('other.mp4'));
-    await pumpEventQueue();
+  test(
+    'cancelling the only pre-dispatch request never calls the extractor',
+    () async {
+      final engine = newEngine(
+        config: const ThumbnailEngineConfig(maxConcurrentExtractions: 1),
+      );
+      extractor.gated = true;
+      // Occupy the single slot.
+      final blocker = engine.thumbnail(VideoSource.asset('other.mp4'));
+      await pumpEventQueue();
 
-    final request = engine.thumbnail(asset);
-    request.result.ignore();
-    await pumpEventQueue();
-    request.cancel();
+      final request = engine.thumbnail(asset);
+      request.result.ignore();
+      await pumpEventQueue();
+      request.cancel();
 
-    extractor.release();
-    await blocker.result;
-    await pumpEventQueue();
-    expect(extractor.calls.where((c) => c.source == asset), isEmpty);
-    await expectLater(
-      request.result,
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.cancelled)),
-    );
-  });
+      extractor.release();
+      await blocker.result;
+      await pumpEventQueue();
+      expect(extractor.calls.where((c) => c.source == asset), isEmpty);
+      await expectLater(
+        request.result,
+        throwsA(
+          isA<ThumbnailException>().having(
+            (e) => e.code,
+            'code',
+            ThumbnailErrorCode.cancelled,
+          ),
+        ),
+      );
+    },
+  );
 
   test('cancelling one joiner leaves the other unaffected', () async {
     final engine = newEngine();
@@ -106,8 +116,13 @@ void main() {
     b.cancel();
     await expectLater(
       b.result,
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.cancelled)),
+      throwsA(
+        isA<ThumbnailException>().having(
+          (e) => e.code,
+          'code',
+          ThumbnailErrorCode.cancelled,
+        ),
+      ),
     );
 
     extractor.release();
@@ -116,69 +131,88 @@ void main() {
     expect(engine.metrics.cancellations, 1);
   });
 
-  test('cancelling all joiners of an in-flight request calls extractor.cancel',
-      () async {
-    final engine = newEngine();
-    extractor.gated = true;
-    final a = engine.thumbnail(asset);
-    final b = engine.thumbnail(asset);
-    a.result.ignore();
-    b.result.ignore();
-    await pumpEventQueue();
-    expect(extractor.callCount, 1);
+  test(
+    'cancelling all joiners of an in-flight request calls extractor.cancel',
+    () async {
+      final engine = newEngine();
+      extractor.gated = true;
+      final a = engine.thumbnail(asset);
+      final b = engine.thumbnail(asset);
+      a.result.ignore();
+      b.result.ignore();
+      await pumpEventQueue();
+      expect(extractor.callCount, 1);
 
-    a.cancel();
-    b.cancel();
-    await pumpEventQueue();
-    expect(extractor.cancelled, [extractor.calls.single.requestId]);
+      a.cancel();
+      b.cancel();
+      await pumpEventQueue();
+      expect(extractor.cancelled, [extractor.calls.single.requestId]);
 
-    // The sunk-cost result still lands in the cache for the next request.
-    extractor.release();
-    await pumpEventQueue();
-    final next = await engine.getThumbnail(asset);
-    expect(next.wasCached, isTrue);
-    expect(extractor.callCount, 1);
-  });
+      // The sunk-cost result still lands in the cache for the next request.
+      extractor.release();
+      await pumpEventQueue();
+      final next = await engine.getThumbnail(asset);
+      expect(next.wasCached, isTrue);
+      expect(extractor.callCount, 1);
+    },
+  );
 
   test('visible requests dispatch before earlier prefetch requests', () async {
     final engine = newEngine(
-        config: const ThumbnailEngineConfig(maxConcurrentExtractions: 1));
+      config: const ThumbnailEngineConfig(maxConcurrentExtractions: 1),
+    );
     extractor.gated = true;
     engine.thumbnail(VideoSource.asset('blocker.mp4')).result.ignore();
     await pumpEventQueue();
 
     engine.prefetch(VideoSource.asset('p.mp4'));
     await pumpEventQueue();
-    final visible = engine.thumbnail(VideoSource.asset('v.mp4'),
-        priority: ThumbnailPriority.visible);
+    final visible = engine.thumbnail(
+      VideoSource.asset('v.mp4'),
+      priority: ThumbnailPriority.visible,
+    );
     await pumpEventQueue();
 
     extractor.gated = false;
     extractor.release();
     await visible.result;
     // blocker ran first (it held the slot), then the visible one.
-    final order = extractor.calls.map((c) => (c.source as AssetVideoSource).assetKey).toList();
+    final order = extractor.calls
+        .map((c) => (c.source as AssetVideoSource).assetKey)
+        .toList();
     expect(order[0], 'blocker.mp4');
     expect(order[1], 'v.mp4');
   });
 
   test('failures are negative-cached within the ttl, then retried', () async {
     final engine = newEngine();
-    extractor.failWith =
-        const ThumbnailException(ThumbnailErrorCode.network, '404');
+    extractor.failWith = const ThumbnailException(
+      ThumbnailErrorCode.network,
+      '404',
+    );
 
     await expectLater(
       engine.getThumbnail(asset),
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.network)),
+      throwsA(
+        isA<ThumbnailException>().having(
+          (e) => e.code,
+          'code',
+          ThumbnailErrorCode.network,
+        ),
+      ),
     );
     expect(extractor.callCount, 1);
 
     // Within the TTL: fast-fail without calling the extractor.
     await expectLater(
       engine.getThumbnail(asset),
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.network)),
+      throwsA(
+        isA<ThumbnailException>().having(
+          (e) => e.code,
+          'code',
+          ThumbnailErrorCode.network,
+        ),
+      ),
     );
     expect(extractor.callCount, 1);
 
@@ -225,8 +259,13 @@ void main() {
     final engine = newEngine();
     await expectLater(
       engine.getThumbnail(VideoSource.file('/definitely/not/here.mp4')),
-      throwsA(isA<ThumbnailException>()
-          .having((e) => e.code, 'code', ThumbnailErrorCode.fileNotFound)),
+      throwsA(
+        isA<ThumbnailException>().having(
+          (e) => e.code,
+          'code',
+          ThumbnailErrorCode.fileNotFound,
+        ),
+      ),
     );
     expect(extractor.callCount, 0);
   });
@@ -246,16 +285,20 @@ void main() {
     ]);
   });
 
-  test('configure adjusts concurrency live but refuses cache resizing after init',
-      () async {
-    final engine = newEngine();
-    await engine.getThumbnail(asset);
-    await engine.configure(const ThumbnailEngineConfig(maxConcurrentExtractions: 4));
-    expect(
-      () => engine.configure(const ThumbnailEngineConfig(maxCacheBytes: 1)),
-      throwsStateError,
-    );
-  });
+  test(
+    'configure adjusts concurrency live but refuses cache resizing after init',
+    () async {
+      final engine = newEngine();
+      await engine.getThumbnail(asset);
+      await engine.configure(
+        const ThumbnailEngineConfig(maxConcurrentExtractions: 4),
+      );
+      expect(
+        () => engine.configure(const ThumbnailEngineConfig(maxCacheBytes: 1)),
+        throwsStateError,
+      );
+    },
+  );
 
   test('config validation rejects out-of-range concurrency', () {
     expect(

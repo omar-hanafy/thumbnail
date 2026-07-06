@@ -56,16 +56,19 @@ void main() {
     expect(extractor.callCount, 1);
   });
 
-  test('equal providers share one ImageCache entry and one extraction', () async {
-    final a = VideoThumbnailImage(asset, engine: engine);
-    final b = VideoThumbnailImage(asset, engine: engine);
-    expect(a, equals(b));
-    expect(a.hashCode, b.hashCode);
+  test(
+    'equal providers share one ImageCache entry and one extraction',
+    () async {
+      final a = VideoThumbnailImage(asset, engine: engine);
+      final b = VideoThumbnailImage(asset, engine: engine);
+      expect(a, equals(b));
+      expect(a.hashCode, b.hashCode);
 
-    await resolveInfo(a);
-    await resolveInfo(b);
-    expect(extractor.callCount, 1, reason: 'second resolve is a cache hit');
-  });
+      await resolveInfo(a);
+      await resolveInfo(b);
+      expect(extractor.callCount, 1, reason: 'second resolve is a cache hit');
+    },
+  );
 
   test('providers with different specs are distinct', () {
     final a = VideoThumbnailImage(asset, engine: engine);
@@ -77,30 +80,35 @@ void main() {
     expect(a, isNot(equals(b)));
   });
 
-  test('removing the last listener before completion cancels the request',
-      () async {
-    extractor.gated = true;
-    final provider = VideoThumbnailImage(asset, engine: engine);
-    // Drive loadImage directly so the ImageCache's pending-image listener
-    // does not keep the stream alive.
-    final completer = provider.loadImage(
-      provider,
-      PaintingBinding.instance.instantiateImageCodecWithSize,
-    );
-    final listener = ImageStreamListener((_, _) {});
-    completer.addListener(listener);
-    await pumpEventQueue();
-    expect(extractor.callCount, 1);
+  test(
+    'removing the last listener before completion cancels the request',
+    () async {
+      extractor.gated = true;
+      final provider = VideoThumbnailImage(asset, engine: engine);
+      // Drive loadImage directly so the ImageCache's pending-image listener
+      // does not keep the stream alive.
+      final completer = provider.loadImage(
+        provider,
+        PaintingBinding.instance.instantiateImageCodecWithSize,
+      );
+      final listener = ImageStreamListener((_, _) {});
+      completer.addListener(listener);
+      await pumpEventQueue();
+      expect(extractor.callCount, 1);
 
-    completer.removeListener(listener);
-    await pumpEventQueue();
-    expect(extractor.cancelled, isNotEmpty,
-        reason: 'last-listener removal must cancel the in-flight extraction');
+      completer.removeListener(listener);
+      await pumpEventQueue();
+      expect(
+        extractor.cancelled,
+        isNotEmpty,
+        reason: 'last-listener removal must cancel the in-flight extraction',
+      );
 
-    extractor.release();
-    await pumpEventQueue();
-    expect(engine.metrics.cancellations, 1);
-  });
+      extractor.release();
+      await pumpEventQueue();
+      expect(engine.metrics.cancellations, 1);
+    },
+  );
 
   test('a corrupted cache file is evicted and the error surfaces', () async {
     // First extraction writes garbage that cannot be decoded.

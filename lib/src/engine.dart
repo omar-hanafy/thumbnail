@@ -109,19 +109,22 @@ class ThumbnailEngine {
     required this._directoryResolver,
     required ThumbnailEngineConfig config,
     DateTime Function()? now,
-  })  : _config = config,
-        _now = now ?? DateTime.now,
-        _scheduler =
-            RequestScheduler(maxConcurrent: config.maxConcurrentExtractions),
-        _negativeCache =
-            NegativeCache(ttl: config.negativeCacheTtl, now: now ?? DateTime.now);
+  }) : _config = config,
+       _now = now ?? DateTime.now,
+       _scheduler = RequestScheduler(
+         maxConcurrent: config.maxConcurrentExtractions,
+       ),
+       _negativeCache = NegativeCache(
+         ttl: config.negativeCacheTtl,
+         now: now ?? DateTime.now,
+       );
 
   /// The shared engine used by production code and [VideoThumbnailImage].
   static ThumbnailEngine get instance => _instance ??= ThumbnailEngine._(
-        extractor: PigeonExtractor(),
-        directoryResolver: _defaultDirectory,
-        config: const ThumbnailEngineConfig(),
-      );
+    extractor: PigeonExtractor(),
+    directoryResolver: _defaultDirectory,
+    config: const ThumbnailEngineConfig(),
+  );
   static ThumbnailEngine? _instance;
 
   /// Builds an isolated engine with injected dependencies. Test-only.
@@ -163,9 +166,9 @@ class ThumbnailEngine {
 
   /// Point-in-time engine statistics.
   ThumbnailMetrics get metrics => _recorder.snapshot(
-        queueDepth: _scheduler.queueDepth,
-        activeJobs: _scheduler.activeCount,
-      );
+    queueDepth: _scheduler.queueDepth,
+    activeJobs: _scheduler.activeCount,
+  );
 
   /// Applies [config]. Concurrency, timeout, negative-cache TTL, and the
   /// default spec apply immediately at any time; cache sizing
@@ -173,7 +176,8 @@ class ThumbnailEngine {
   /// set before the first request and throws [StateError] afterwards.
   Future<void> configure(ThumbnailEngineConfig config) async {
     config.validate();
-    final cacheTouched = config.maxCacheBytes != _config.maxCacheBytes ||
+    final cacheTouched =
+        config.maxCacheBytes != _config.maxCacheBytes ||
         config.maxCacheEntries != _config.maxCacheEntries;
     if (cacheTouched && _initFuture != null) {
       throw StateError(
@@ -198,13 +202,15 @@ class ThumbnailEngine {
     effectiveSpec.validate();
     final request = _EngineRequest(this);
     request._completer.future.ignore();
-    unawaited(_start(
-      request,
-      source,
-      effectiveSpec,
-      priority,
-      timeout ?? _config.defaultTimeout,
-    ));
+    unawaited(
+      _start(
+        request,
+        source,
+        effectiveSpec,
+        priority,
+        timeout ?? _config.defaultTimeout,
+      ),
+    );
     return request;
   }
 
@@ -214,9 +220,12 @@ class ThumbnailEngine {
     ThumbnailSpec? spec,
     ThumbnailPriority priority = ThumbnailPriority.normal,
     Duration? timeout,
-  }) =>
-      thumbnail(source, spec: spec, priority: priority, timeout: timeout)
-          .result;
+  }) => thumbnail(
+    source,
+    spec: spec,
+    priority: priority,
+    timeout: timeout,
+  ).result;
 
   /// Fire-and-forget cache warming in the lowest priority band. Errors are
   /// recorded in [metrics] but never surface.
@@ -288,12 +297,14 @@ class ThumbnailEngine {
       if (hit != null) {
         _recorder.incCacheHit();
         _emit(ThumbnailEvent(ThumbnailEventKind.cacheHit, key.fileName));
-        request._complete(Thumbnail(
-          filePath: hit.path,
-          width: hit.width,
-          height: hit.height,
-          wasCached: true,
-        ));
+        request._complete(
+          Thumbnail(
+            filePath: hit.path,
+            width: hit.width,
+            height: hit.height,
+            wasCached: true,
+          ),
+        );
         return;
       }
 
@@ -384,29 +395,36 @@ class _Flight {
       timeout,
       () => _work(enqueuedAt),
     );
-    _job.future.then((thumbnail) {
-      for (final joiner in _joiners) {
-        joiner._complete(thumbnail);
-      }
-    }, onError: (Object error, StackTrace stack) {
-      final e = mapPlatformError(error);
-      engine._countTerminal(e);
-      engine._negativeCache.record(key.fileName, e);
-      engine._emit(ThumbnailEvent(
-        switch (e.code) {
-          ThumbnailErrorCode.cancelled => ThumbnailEventKind.cancelled,
-          ThumbnailErrorCode.timeout => ThumbnailEventKind.timedOut,
-          _ => ThumbnailEventKind.failed,
-        },
-        key.fileName,
-        errorCode: e.code,
-      ));
-      for (final joiner in _joiners) {
-        joiner._fail(e, stack);
-      }
-    }).whenComplete(() {
-      engine._flights.remove(key.fileName);
-    });
+    _job.future
+        .then(
+          (thumbnail) {
+            for (final joiner in _joiners) {
+              joiner._complete(thumbnail);
+            }
+          },
+          onError: (Object error, StackTrace stack) {
+            final e = mapPlatformError(error);
+            engine._countTerminal(e);
+            engine._negativeCache.record(key.fileName, e);
+            engine._emit(
+              ThumbnailEvent(
+                switch (e.code) {
+                  ThumbnailErrorCode.cancelled => ThumbnailEventKind.cancelled,
+                  ThumbnailErrorCode.timeout => ThumbnailEventKind.timedOut,
+                  _ => ThumbnailEventKind.failed,
+                },
+                key.fileName,
+                errorCode: e.code,
+              ),
+            );
+            for (final joiner in _joiners) {
+              joiner._fail(e, stack);
+            }
+          },
+        )
+        .whenComplete(() {
+          engine._flights.remove(key.fileName);
+        });
   }
 
   Future<Thumbnail> _work(DateTime enqueuedAt) async {
@@ -439,11 +457,13 @@ class _Flight {
       queueWait: dispatchedAt.difference(enqueuedAt),
       extract: engine._now().difference(dispatchedAt),
     );
-    engine._emit(ThumbnailEvent(
-      ThumbnailEventKind.extracted,
-      key.fileName,
-      elapsed: engine._now().difference(enqueuedAt),
-    ));
+    engine._emit(
+      ThumbnailEvent(
+        ThumbnailEventKind.extracted,
+        key.fileName,
+        elapsed: engine._now().difference(enqueuedAt),
+      ),
+    );
     return Thumbnail(
       filePath: path,
       width: extraction.width,
@@ -483,7 +503,10 @@ class _EngineRequest implements ThumbnailRequest {
     _flight?.onJoinerCancelled(this);
     engine._recorder.incCancelled();
     _completer.completeError(
-      const ThumbnailException(ThumbnailErrorCode.cancelled, 'request cancelled'),
+      const ThumbnailException(
+        ThumbnailErrorCode.cancelled,
+        'request cancelled',
+      ),
     );
   }
 

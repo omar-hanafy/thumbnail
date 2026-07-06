@@ -105,8 +105,7 @@ class VideoThumbnailImage extends ImageProvider<VideoThumbnailImage> {
       rethrow;
     }
     try {
-      final buffer =
-          await ui.ImmutableBuffer.fromFilePath(thumbnail.filePath);
+      final buffer = await ui.ImmutableBuffer.fromFilePath(thumbnail.filePath);
       return await decode(buffer);
     } catch (_) {
       // The cached file is unreadable (purged by the OS or corrupted):

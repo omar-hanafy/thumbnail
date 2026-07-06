@@ -11,7 +11,7 @@ import '../thumbnail_exception.dart';
 class NegativeCache {
   /// Creates a negative cache. [now] is injectable for tests.
   NegativeCache({required this.ttl, DateTime Function()? now})
-      : _now = now ?? DateTime.now;
+    : _now = now ?? DateTime.now;
 
   /// How long a recorded failure keeps fast-failing lookups.
   final Duration ttl;
