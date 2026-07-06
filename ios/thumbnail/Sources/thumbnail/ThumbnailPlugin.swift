@@ -1,19 +1,26 @@
 import Flutter
 import UIKit
 
-public class ThumbnailPlugin: NSObject, FlutterPlugin {
+/// Registers the Pigeon host API for the thumbnail engine.
+public class ThumbnailPlugin: NSObject, FlutterPlugin, ThumbnailHostApi {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "thumbnail", binaryMessenger: registrar.messenger())
     let instance = ThumbnailPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
+    ThumbnailHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
   }
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-    case "getPlatformVersion":
-      result("iOS " + UIDevice.current.systemVersion)
-    default:
-      result(FlutterMethodNotImplemented)
-    }
+  func extract(request: ExtractRequest, completion: @escaping (Result<ExtractResult, Error>) -> Void) {
+    completion(
+      .failure(
+        PigeonError(
+          code: "extractionFailed",
+          message: "iOS extractor not implemented yet",
+          details: nil
+        )
+      )
+    )
+  }
+
+  func cancel(requestId: String) throws {
+    // Implemented alongside the extractor.
   }
 }
