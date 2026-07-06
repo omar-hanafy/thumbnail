@@ -8,15 +8,38 @@ import 'package:path/path.dart' as p;
 import '../thumbnail_exception.dart';
 import 'cache_key.dart';
 
+/// A committed cache entry: where the file is and what it contains.
+@immutable
+class CachedThumbnail {
+  /// Creates an entry description.
+  const CachedThumbnail({
+    required this.path,
+    required this.width,
+    required this.height,
+  });
+
+  /// Absolute path of the encoded image.
+  final String path;
+
+  /// Encoded width in pixels.
+  final int width;
+
+  /// Encoded height in pixels.
+  final int height;
+}
+
 /// LRU disk cache of encoded thumbnail files.
 ///
 /// Design rules that keep the request hot path cheap:
-/// - The index is fully in memory after [init]; [lookupPath] performs no
-///   disk stat. (If the OS purges a file mid-session, the decode layer
-///   detects it and evicts the entry.)
+/// - The index is fully in memory after [init]; [lookup] performs no disk
+///   stat. (If the OS purges a file mid-session, the decode layer detects it
+///   and evicts the entry.)
 /// - Writers never write final names directly: natives fill an engine-chosen
 ///   `<name>.<rand>.part` temp file that [commit] renames atomically.
 ///   Crash leftovers are deleted during [init].
+/// - Image dimensions are encoded in the on-disk file name
+///   (`<hashes>.<w>x<h>.<ext>`), so cache hits know their size in any
+///   session without decoding a single byte.
 /// - Eviction runs asynchronously after commits, never blocking a request.
 ///
 /// LRU order approximately survives restarts: hits refresh the in-memory
@@ -44,8 +67,15 @@ class DiskCache {
   /// Minimum interval between mtime writes for the same entry.
   final Duration touchThrottle;
 
+  /// On-disk names look like `<16 hex>-<24 hex>.<w>x<h>.<jpg|png>`.
+  static final RegExp _fileNamePattern = RegExp(
+    r'^([a-f0-9]{16}-[a-f0-9]{24})\.(\d+)x(\d+)\.(jpg|png)$',
+  );
+
   final DateTime Function() _now;
   final Random _random = Random();
+
+  /// Keyed by the [CacheKey.fileName] (which has no dims segment).
   final Map<String, _Entry> _index = {};
   int _totalBytes = 0;
   Future<void>? _evictionRun;
@@ -56,36 +86,46 @@ class DiskCache {
   /// Number of committed entries.
   int get entryCount => _index.length;
 
-  /// Creates the directory, deletes orphaned `.part` files, and builds the
-  /// in-memory index from the files on disk.
+  /// Creates the directory, deletes orphaned `.part` files and unrecognized
+  /// names, and builds the in-memory index from the files on disk.
   Future<void> init() async {
     await directory.create(recursive: true);
     await for (final entity in directory.list()) {
       if (entity is! File) continue;
       final name = p.basename(entity.path);
-      if (name.endsWith('.part')) {
+      final match = _fileNamePattern.firstMatch(name);
+      if (match == null) {
+        // Orphan .part file or foreign leftover; this directory is our
+        // versioned namespace, so anything unrecognized is dead weight.
         try {
           await entity.delete();
         } on FileSystemException {
-          // Orphan cleanup is best-effort.
+          // Best-effort.
         }
         continue;
       }
       final stat = await entity.stat();
       final accessMs = stat.modified.millisecondsSinceEpoch;
-      _index[name] = _Entry(stat.size, accessMs, accessMs);
+      _index['${match[1]}.${match[4]}'] = _Entry(
+        fullName: name,
+        size: stat.size,
+        width: int.parse(match[2]!),
+        height: int.parse(match[3]!),
+        lastAccessMs: accessMs,
+        lastTouchMs: accessMs,
+      );
       _totalBytes += stat.size;
     }
   }
 
-  /// Returns the absolute path for [key] if cached, refreshing its recency.
+  /// Returns the entry for [key] if cached, refreshing its recency.
   /// Performs no disk I/O beyond an occasional throttled mtime touch.
-  String? lookupPath(CacheKey key) {
+  CachedThumbnail? lookup(CacheKey key) {
     final entry = _index[key.fileName];
     if (entry == null) return null;
     final now = _now();
     entry.lastAccessMs = now.millisecondsSinceEpoch;
-    final path = _pathOf(key.fileName);
+    final path = _pathOf(entry.fullName);
     if (now.millisecondsSinceEpoch - entry.lastTouchMs >=
         touchThrottle.inMilliseconds) {
       entry.lastTouchMs = now.millisecondsSinceEpoch;
@@ -95,7 +135,7 @@ class DiskCache {
         // Best-effort; recency survives in memory for this session anyway.
       }
     }
-    return path;
+    return CachedThumbnail(path: path, width: entry.width, height: entry.height);
   }
 
   /// Reserves a unique temp path for [key] inside the cache directory.
@@ -106,8 +146,16 @@ class DiskCache {
 
   /// Atomically publishes [tempPath] as the entry for [key] and returns the
   /// final path. Triggers asynchronous eviction when over the caps.
-  Future<String> commit(CacheKey key, String tempPath) async {
-    final finalPath = _pathOf(key.fileName);
+  Future<String> commit(
+    CacheKey key,
+    String tempPath, {
+    required int width,
+    required int height,
+  }) async {
+    final dot = key.fileName.lastIndexOf('.');
+    final fullName =
+        '${key.fileName.substring(0, dot)}.${width}x$height${key.fileName.substring(dot)}';
+    final finalPath = _pathOf(fullName);
     final int size;
     try {
       size = await File(tempPath).length();
@@ -120,9 +168,25 @@ class DiskCache {
       );
     }
     final previous = _index[key.fileName];
-    if (previous != null) _totalBytes -= previous.size;
+    if (previous != null) {
+      _totalBytes -= previous.size;
+      if (previous.fullName != fullName) {
+        try {
+          await File(_pathOf(previous.fullName)).delete();
+        } on FileSystemException {
+          // Already gone.
+        }
+      }
+    }
     final nowMs = _now().millisecondsSinceEpoch;
-    _index[key.fileName] = _Entry(size, nowMs, nowMs);
+    _index[key.fileName] = _Entry(
+      fullName: fullName,
+      size: size,
+      width: width,
+      height: height,
+      lastAccessMs: nowMs,
+      lastTouchMs: nowMs,
+    );
     _totalBytes += size;
     if (_totalBytes > maxBytes || _index.length > maxEntries) {
       unawaited(evictIfNeeded());
@@ -130,7 +194,14 @@ class DiskCache {
     return finalPath;
   }
 
-  /// Deletes every entry whose file name starts with [sourcePrefix].
+  /// Removes the entry for [key] (used when a cached file turns out to be
+  /// unreadable, e.g. purged or corrupted externally).
+  Future<void> remove(CacheKey key) async {
+    final entry = _index[key.fileName];
+    if (entry != null) await _deleteEntry(key.fileName);
+  }
+
+  /// Deletes every entry whose name starts with [sourcePrefix].
   Future<void> evictSource(String sourcePrefix) async {
     final names =
         _index.keys.where((n) => n.startsWith(sourcePrefix)).toList();
@@ -171,7 +242,9 @@ class DiskCache {
     final entryTarget = (maxEntries * 0.9).floor();
     if (_totalBytes <= maxBytes && _index.length <= maxEntries) return;
     final names = _index.keys.toList()
-      ..sort((a, b) => _index[a]!.lastAccessMs.compareTo(_index[b]!.lastAccessMs));
+      ..sort(
+        (a, b) => _index[a]!.lastAccessMs.compareTo(_index[b]!.lastAccessMs),
+      );
     for (final name in names) {
       if (_totalBytes <= byteTarget && _index.length <= entryTarget) break;
       await _deleteEntry(name);
@@ -180,9 +253,10 @@ class DiskCache {
 
   Future<void> _deleteEntry(String name) async {
     final entry = _index.remove(name);
-    if (entry != null) _totalBytes -= entry.size;
+    if (entry == null) return;
+    _totalBytes -= entry.size;
     try {
-      await File(_pathOf(name)).delete();
+      await File(_pathOf(entry.fullName)).delete();
     } on FileSystemException {
       // Already gone (OS purge, concurrent delete): index is corrected above.
     }
@@ -192,8 +266,19 @@ class DiskCache {
 }
 
 class _Entry {
-  _Entry(this.size, this.lastAccessMs, this.lastTouchMs);
+  _Entry({
+    required this.fullName,
+    required this.size,
+    required this.width,
+    required this.height,
+    required this.lastAccessMs,
+    required this.lastTouchMs,
+  });
+
+  final String fullName;
   final int size;
+  final int width;
+  final int height;
   int lastAccessMs;
   int lastTouchMs;
 }

@@ -5,6 +5,8 @@
 /// low-end devices.
 library;
 
+export 'src/engine.dart';
+export 'src/extractor/thumbnail_extractor.dart';
 export 'src/metrics.dart' hide MetricsRecorder;
 export 'src/thumbnail_exception.dart';
 export 'src/thumbnail_result.dart';

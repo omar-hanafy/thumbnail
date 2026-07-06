@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:thumbnail/src/extractor/thumbnail_extractor.dart';
 import 'package:thumbnail/thumbnail.dart';
 
 /// A valid 1x1 PNG, so provider tests can decode real bytes.
