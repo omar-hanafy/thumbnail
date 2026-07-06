@@ -4,19 +4,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "thumbnail",
+    name: "cached_video_thumbnail",
     platforms: [
         .iOS("13.0")
     ],
     products: [
-        .library(name: "thumbnail", targets: ["thumbnail"])
+        .library(name: "cached_video_thumbnail", targets: ["cached_video_thumbnail"])
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework")
     ],
     targets: [
         .target(
-            name: "thumbnail",
+            name: "cached_video_thumbnail",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework")
             ],

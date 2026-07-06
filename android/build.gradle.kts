@@ -1,4 +1,4 @@
-group = "tech.tomars.thumbnail"
+group = "tech.tomars.cached_video_thumbnail"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -26,7 +26,7 @@ plugins {
 }
 
 android {
-    namespace = "tech.tomars.thumbnail"
+    namespace = "tech.tomars.cached_video_thumbnail"
 
     compileSdk = 36
 

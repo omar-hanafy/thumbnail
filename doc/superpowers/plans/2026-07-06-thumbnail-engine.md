@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the `thumbnail` Flutter plugin: a cached, scheduled, cancellable video-thumbnail engine (assets, files, network URLs) with thin correct Kotlin/Swift extractors, per doc/superpowers/specs/2026-07-06-thumbnail-engine-design.md.
+**Goal:** Build the `cached_video_thumbnail` Flutter plugin: a cached, scheduled, cancellable video-thumbnail engine (assets, files, network URLs) with thin correct Kotlin/Swift extractors, per doc/superpowers/specs/2026-07-06-thumbnail-engine-design.md.
 
 **Architecture:** Pure-Dart engine (scheduler + disk cache + negative cache + metrics + ImageProvider) over an injectable `ThumbnailExtractor` interface; v1 extractor is Pigeon-generated typed channels into stateless Kotlin (`MediaMetadataRetriever`) and Swift (`AVAssetImageGenerator`) executors. Natives encode straight into engine-chosen `.part` files; Dart commits with atomic renames.
 
@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Package name `thumbnail`, org `tech.tomars`, version `0.1.0`, MIT (c) 2026 Omar Hanafy, homepage `https://github.com/omar-hanafy/thumbnail`.
+- Package name `thumbnail`, org `tech.tomars`, version `0.1.0`, MIT (c) 2026 Omar Hanafy, homepage `https://github.com/omar-hanafy/cached_video_thumbnail`.
 - Dart SDK `^3.12.0`, Flutter `>=3.44.0`. Android minSdk 24. iOS deployment target: keep the flutter create template value (do not lower).
 - Never use the em-dash character anywhere (docs, comments, strings). Use '-' instead.
 - No `Co-Authored-By` or self-mention in any commit message.
@@ -24,7 +24,7 @@
 
 ```
 pigeons/messages.dart                       Pigeon schema (single source of truth for the channel)
-lib/thumbnail.dart                          Barrel export (public API only)
+lib/cached_video_thumbnail.dart                          Barrel export (public API only)
 lib/src/video_source.dart                   sealed VideoSource + validation
 lib/src/thumbnail_spec.dart                 ThumbnailSpec, ThumbnailFormat
 lib/src/thumbnail_result.dart               Thumbnail, ThumbnailPriority
@@ -39,9 +39,9 @@ lib/src/pigeon/messages.g.dart              generated
 lib/src/metrics.dart                        ThumbnailMetrics + events + ring buffer percentiles
 lib/src/engine.dart                         ThumbnailEngine + ThumbnailEngineConfig + ThumbnailRequest
 lib/src/image_provider.dart                 VideoThumbnailImage
-android/src/main/kotlin/tech/tomars/thumbnail/ThumbnailPlugin.kt   plugin + pigeon setup
-android/src/main/kotlin/tech/tomars/thumbnail/Extractor.kt         MMR extraction + encode
-android/src/main/kotlin/tech/tomars/thumbnail/Messages.g.kt        generated
+android/src/main/kotlin/tech/tomars/cached_video_thumbnail/ThumbnailPlugin.kt   plugin + pigeon setup
+android/src/main/kotlin/tech/tomars/cached_video_thumbnail/Extractor.kt         MMR extraction + encode
+android/src/main/kotlin/tech/tomars/cached_video_thumbnail/Messages.g.kt        generated
 ios/Classes/ThumbnailPlugin.swift           plugin + pigeon setup + cancel registry
 ios/Classes/Extractor.swift                 AVAssetImageGenerator extraction + encode
 ios/Classes/messages.g.swift                generated
@@ -60,7 +60,7 @@ Delete from scaffold: `lib/thumbnail_platform_interface.dart`, `lib/thumbnail_me
 
 ### Task 1: Scaffold cleanup, pubspec, Pigeon schema + codegen, plugin wiring compiles
 
-**Files:** Modify `pubspec.yaml`, `lib/thumbnail.dart`, `android/.../ThumbnailPlugin.kt`, `ios/Classes/ThumbnailPlugin.swift`, `example/lib/main.dart` (placeholder body); Create `pigeons/messages.dart`; Delete template interface/method-channel/test files.
+**Files:** Modify `pubspec.yaml`, `lib/cached_video_thumbnail.dart`, `android/.../ThumbnailPlugin.kt`, `ios/Classes/ThumbnailPlugin.swift`, `example/lib/main.dart` (placeholder body); Create `pigeons/messages.dart`; Delete template interface/method-channel/test files.
 
 **Interfaces produced:** Pigeon types `PigeonSourceType {asset,file,network}`, `ExtractRequest{requestId,sourceType,source,assetPackage?,headers?,positionMs,exact,maxWidth,maxHeight,format,quality,destPath}`, `ExtractResult{width,height}`, `@HostApi ThumbnailHostApi{ @async ExtractResult extract(ExtractRequest r); void cancel(String requestId); }`.
 
@@ -71,10 +71,10 @@ import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(PigeonOptions(
   dartOut: 'lib/src/pigeon/messages.g.dart',
-  kotlinOut: 'android/src/main/kotlin/tech/tomars/thumbnail/Messages.g.kt',
-  kotlinOptions: KotlinOptions(package: 'tech.tomars.thumbnail'),
+  kotlinOut: 'android/src/main/kotlin/tech/tomars/cached_video_thumbnail/Messages.g.kt',
+  kotlinOptions: KotlinOptions(package: 'tech.tomars.cached_video_thumbnail'),
   swiftOut: 'ios/Classes/messages.g.swift',
-  dartPackageName: 'thumbnail',
+  dartPackageName: 'cached_video_thumbnail',
 ))
 enum PigeonSourceType { asset, file, network }
 
@@ -217,7 +217,7 @@ Tests: request building for all three source types (asset package passthrough, h
 
 ### Task 9: Engine facade (TDD)
 
-**Files:** Create `lib/src/engine.dart`, `test/engine_test.dart`; Modify `lib/thumbnail.dart` (exports).
+**Files:** Create `lib/src/engine.dart`, `test/engine_test.dart`; Modify `lib/cached_video_thumbnail.dart` (exports).
 
 **Produces (public):** `ThumbnailEngineConfig` (fields per Global Constraints + `Directory? cacheDirectoryOverride`, `ThumbnailSpec defaultSpec`, `copyWith`), `ThumbnailEngine.instance`, `ThumbnailEngine.forTesting({extractor, directory, config, now})`, `configure(config)` (live-updates limits; changing cache dir after first use -> `StateError`), `thumbnail(source,{spec,priority,timeout}) -> ThumbnailRequest`, `getThumbnail(...) -> Future<Thumbnail>`, `prefetch`, `evict(source)`, `clearCache()`, `metrics`, `onEvent`.
 

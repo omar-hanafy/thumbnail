@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 import 'support/fake_extractor.dart';
 

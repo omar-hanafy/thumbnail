@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 import 'demo_catalog.dart';
 import 'metrics_dialog.dart';

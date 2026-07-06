@@ -12,9 +12,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:thumbnail/src/extractor/pigeon_extractor.dart';
-import 'package:thumbnail/thumbnail.dart';
-import 'package:thumbnail_example/demo_catalog.dart';
+import 'package:cached_video_thumbnail/src/extractor/pigeon_extractor.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
+import 'package:cached_video_thumbnail_example/demo_catalog.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

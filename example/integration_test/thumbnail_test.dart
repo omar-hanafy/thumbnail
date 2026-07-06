@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:thumbnail/src/extractor/pigeon_extractor.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/src/extractor/pigeon_extractor.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 const landscape = 'assets/fixtures/landscape.mp4';
 const portrait = 'assets/fixtures/portrait_rot90.mp4';

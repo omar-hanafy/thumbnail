@@ -1,3 +1,8 @@
+## 0.1.0-dev.2
+
+- No functional changes. First version released through the automated
+  tag-driven publishing pipeline (CI, pana gate, OIDC publish).
+
 ## 0.1.0-dev.1
 
 Initial release (prerelease).

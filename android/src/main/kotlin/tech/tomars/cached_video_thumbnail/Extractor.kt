@@ -1,4 +1,4 @@
-package tech.tomars.thumbnail
+package tech.tomars.cached_video_thumbnail
 
 import android.content.Context
 import android.graphics.Bitmap

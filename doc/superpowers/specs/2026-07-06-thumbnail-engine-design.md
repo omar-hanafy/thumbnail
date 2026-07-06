@@ -1,8 +1,8 @@
-# thumbnail: a video thumbnail engine for Flutter
+# cached_video_thumbnail: a video thumbnail engine for Flutter
 
 Date: 2026-07-06
 Status: approved (part 1 explicitly by Omar; part 2 details decided autonomously per Omar's directive, logged in Decision Log)
-Package name: `thumbnail` (verified 404 on pub.dev on 2026-07-06)
+Package name: `cached_video_thumbnail`
 Publisher: tomars.tech / Omar Hanafy
 Platforms v1: Android, iOS
 
@@ -197,7 +197,7 @@ Snapshot counters: requests, cacheHits, coalescedJoins, extractions, failuresByC
 
 ## 14. Decision log (autonomous decisions, per Omar's directive)
 
-- Package name `thumbnail` per Omar (404-verified). Org `tech.tomars` matching verified publisher tomars.tech. Homepage `https://github.com/omar-hanafy/thumbnail`. MIT, (c) 2026 Omar Hanafy.
+- Package name `cached_video_thumbnail`. Org `tech.tomars` matching verified publisher tomars.tech. Homepage `https://github.com/omar-hanafy/cached_video_thumbnail`. MIT, (c) 2026 Omar Hanafy.
 - Single package, not federated (reasoning in section 3).
 - No WebP in v1 on either platform: removes a whole native-bug class; JPEG covers the use case; Android-only WebP would break parity.
 - JPEG quality default 80 (75-85 is the sweet band; 80 balances low-end encode cost vs size).
