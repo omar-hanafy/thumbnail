@@ -1,3 +1,7 @@
+## 0.1.0
+
+Initial stable release. Same content as 0.1.0-dev.2.
+
 ## 0.1.0-dev.2
 
 - No functional changes. First version released through the automated

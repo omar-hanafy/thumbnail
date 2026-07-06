@@ -1,6 +1,6 @@
 name: cached_video_thumbnail
 description: "High-performance video thumbnail engine: cached, scheduled, cancellable thumbnail generation from asset, file, and network videos."
-version: 0.1.0-dev.2
+version: 0.1.0
 homepage: https://github.com/omar-hanafy/cached_video_thumbnail
 repository: https://github.com/omar-hanafy/cached_video_thumbnail
 issue_tracker: https://github.com/omar-hanafy/cached_video_thumbnail/issues
