@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 import 'bench_page.dart';
 import 'gallery_page.dart';
@@ -25,13 +25,13 @@ class ExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'thumbnail example',
+      title: 'cached_video_thumbnail example',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
       home: DefaultTabController(
         length: 3,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('thumbnail'),
+            title: const Text('cached_video_thumbnail'),
             bottom: const TabBar(
               tabs: [
                 Tab(text: 'Gallery'),

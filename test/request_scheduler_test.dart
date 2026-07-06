@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thumbnail/src/scheduler/request_scheduler.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/src/scheduler/request_scheduler.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 const _long = Duration(minutes: 10);
 

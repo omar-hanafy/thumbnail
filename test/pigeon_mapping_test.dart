@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thumbnail/src/extractor/pigeon_extractor.dart';
-import 'package:thumbnail/src/pigeon/messages.g.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/src/extractor/pigeon_extractor.dart';
+import 'package:cached_video_thumbnail/src/pigeon/messages.g.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 void main() {
   const spec = ThumbnailSpec(maxWidth: 320, maxHeight: 180, quality: 70);

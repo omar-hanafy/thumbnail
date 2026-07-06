@@ -1,4 +1,4 @@
-# thumbnail
+# cached_video_thumbnail
 
 A high-performance video thumbnail engine for Flutter. Generates thumbnails
 from **bundle assets**, **local files**, and **network URLs** through a
@@ -14,7 +14,7 @@ fling: unbounded native decoders, no caching, no deduplication, no
 cancellation, bytes shipped over the platform channel, and slow exact-frame
 seeks. This package is an engine, not a converter:
 
-| Capability | thumbnail |
+| Capability | cached_video_thumbnail |
 |---|---|
 | Disk cache (deterministic keys, LRU, atomic writes) | yes |
 | Cache hits without decoding (dims stored in the entry) | yes |
@@ -36,7 +36,7 @@ dependencies.
 ## Quickstart
 
 ```dart
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 // The simplest path: drop the provider into any Image widget.
 Image(

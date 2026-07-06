@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart' show sha1;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thumbnail/src/cache/cache_key.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/src/cache/cache_key.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 void main() {
   const spec = ThumbnailSpec(maxWidth: 320, maxHeight: 320);

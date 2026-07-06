@@ -2,7 +2,7 @@
 // See also: https://pub.dev/packages/pigeon
 @file:Suppress("UNCHECKED_CAST", "ArrayInDataClass")
 
-package tech.tomars.thumbnail
+package tech.tomars.cached_video_thumbnail
 
 import android.util.Log
 import io.flutter.plugin.common.BasicMessageChannel
@@ -415,7 +415,7 @@ interface ThumbnailHostApi {
     fun setUp(binaryMessenger: BinaryMessenger, api: ThumbnailHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.thumbnail.ThumbnailHostApi.extract$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.cached_video_thumbnail.ThumbnailHostApi.extract$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
@@ -435,7 +435,7 @@ interface ThumbnailHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.thumbnail.ThumbnailHostApi.cancel$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.cached_video_thumbnail.ThumbnailHostApi.cancel$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>

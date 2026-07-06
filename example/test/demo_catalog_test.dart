@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thumbnail/thumbnail.dart';
-import 'package:thumbnail_example/demo_catalog.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
+import 'package:cached_video_thumbnail_example/demo_catalog.dart';
 
 void main() {
   final sections = buildDemoSections();

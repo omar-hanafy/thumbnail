@@ -1,6 +1,6 @@
-# thumbnail_example
+# cached_video_thumbnail_example
 
-Manual-verification app and test host for the `thumbnail` engine.
+Manual-verification app and test host for the `cached_video_thumbnail` engine.
 
 ## Tabs
 

@@ -1,4 +1,4 @@
-package tech.tomars.thumbnail
+package tech.tomars.cached_video_thumbnail
 
 import android.os.Handler
 import android.os.Looper

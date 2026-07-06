@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thumbnail/src/metrics.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/src/metrics.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 void main() {
   test('counters accumulate into the snapshot', () {

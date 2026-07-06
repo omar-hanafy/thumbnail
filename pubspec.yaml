@@ -1,9 +1,9 @@
-name: thumbnail
+name: cached_video_thumbnail
 description: "High-performance video thumbnail engine: cached, scheduled, cancellable thumbnail generation from asset, file, and network videos."
-version: 0.1.0-dev.1
-homepage: https://github.com/omar-hanafy/thumbnail
-repository: https://github.com/omar-hanafy/thumbnail
-issue_tracker: https://github.com/omar-hanafy/thumbnail/issues
+version: 0.1.0-dev.2
+homepage: https://github.com/omar-hanafy/cached_video_thumbnail
+repository: https://github.com/omar-hanafy/cached_video_thumbnail
+issue_tracker: https://github.com/omar-hanafy/cached_video_thumbnail/issues
 
 topics:
   - video
@@ -35,7 +35,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: tech.tomars.thumbnail
+        package: tech.tomars.cached_video_thumbnail
         pluginClass: ThumbnailPlugin
       ios:
         pluginClass: ThumbnailPlugin
