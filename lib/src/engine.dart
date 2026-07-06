@@ -327,8 +327,8 @@ class ThumbnailEngine {
       // 4. New flight.
       final flight = _Flight(this, key, source, spec, priority, timeout);
       _flights[key.fileName] = flight;
-      flight.join(request);
       flight.launch();
+      flight.join(request);
     } on Object catch (error, stack) {
       final e = mapPlatformError(error);
       _countTerminal(e);
@@ -382,9 +382,18 @@ class _Flight {
   late final ScheduledJob<Thumbnail> _job;
   bool _nativeCancelRequested = false;
 
+  /// Pipes the job outcome into [request]'s own completer. Joining a flight
+  /// whose job has already settled is safe: the callbacks fire immediately.
+  /// (A settled flight can still be visible in the flight map for one
+  /// microtask before its cleanup runs.)
   void join(_EngineRequest request) {
     _joiners.add(request);
     request._flight = this;
+    _job.future.then(
+      request._complete,
+      onError: (Object error, StackTrace stack) =>
+          request._fail(mapPlatformError(error), stack),
+    );
   }
 
   void launch() {
@@ -395,17 +404,21 @@ class _Flight {
       timeout,
       () => _work(enqueuedAt),
     );
+    // Flight-level bookkeeping happens exactly once, independent of joiners.
     _job.future
-        .then(
-          (thumbnail) {
-            for (final joiner in _joiners) {
-              joiner._complete(thumbnail);
-            }
-          },
+        .then<void>(
+          (_) {},
           onError: (Object error, StackTrace stack) {
             final e = mapPlatformError(error);
             engine._countTerminal(e);
             engine._negativeCache.record(key.fileName, e);
+            if (e.code == ThumbnailErrorCode.timeout &&
+                !_nativeCancelRequested) {
+              // The deadline passed: abort native work where supported so a
+              // hung remote source cannot pin a decoder thread.
+              _nativeCancelRequested = true;
+              unawaited(engine._extractor.cancel(requestId));
+            }
             engine._emit(
               ThumbnailEvent(
                 switch (e.code) {
@@ -417,9 +430,6 @@ class _Flight {
                 errorCode: e.code,
               ),
             );
-            for (final joiner in _joiners) {
-              joiner._fail(e, stack);
-            }
           },
         )
         .whenComplete(() {
