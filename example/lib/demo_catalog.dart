@@ -95,9 +95,16 @@ List<DemoSection> buildDemoSections() {
           note: 'exact: true decodes to the precise frame.',
         ),
         DemoEntry(
-          label: 'MOV 720p, first keyframe',
+          label: 'MOV 720p at 60s',
           source: _net(bbbMovUrl),
-          note: 'Large remote file; only the needed bytes are fetched.',
+          spec: const ThumbnailSpec(
+            maxWidth: 480,
+            maxHeight: 480,
+            position: Duration(seconds: 60),
+          ),
+          note:
+              'Large remote file; only the needed bytes are fetched. '
+              '(The movie itself opens on black frames, so we seek to 60s.)',
         ),
       ],
     ),
@@ -111,7 +118,11 @@ List<DemoSection> buildDemoSections() {
         DemoEntry(
           label: 'Big Buck Bunny HLS (.m3u8)',
           source: _net(bbbHlsUrl),
-          note: 'Platform-dependent; a clean error here is acceptable.',
+          note:
+              'Platform-dependent; a clean error here is acceptable '
+              '(iOS reports unsupportedMedia, many Android devices '
+              'report network).',
+          expectFailure: true,
         ),
       ],
     ),
