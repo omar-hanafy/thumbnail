@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -298,6 +299,117 @@ void main() {
             ]),
           ),
         ),
+      );
+    });
+  });
+
+  group('cache and API lifecycle', () {
+    testWidgets('prefetch warms the cache for a later visible request', (
+      _,
+    ) async {
+      const spec = ThumbnailSpec(maxWidth: 144, maxHeight: 144);
+      engine.prefetch(VideoSource.asset(landscape), spec: spec);
+
+      // Prefetch is fire-and-forget; wait for the extraction to land.
+      final deadline = DateTime.now().add(const Duration(seconds: 15));
+      while (engine.metrics.extractions < 1) {
+        expect(
+          DateTime.now().isBefore(deadline),
+          isTrue,
+          reason: 'prefetch extraction never completed',
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+
+      final result = await engine.getThumbnail(
+        VideoSource.asset(landscape),
+        spec: spec,
+        priority: ThumbnailPriority.visible,
+      );
+      expect(result.wasCached, isTrue, reason: 'prefetch must have warmed it');
+      expect(engine.metrics.extractions, 1);
+    });
+
+    testWidgets('identical concurrent requests coalesce into one extraction', (
+      _,
+    ) async {
+      const spec = ThumbnailSpec(maxWidth: 152, maxHeight: 152);
+      final results = await Future.wait([
+        for (var i = 0; i < 4; i++)
+          engine.getThumbnail(VideoSource.asset(landscape), spec: spec),
+      ]);
+      for (final r in results) {
+        expect(r.filePath, results.first.filePath);
+      }
+      expect(engine.metrics.extractions, 1);
+      expect(engine.metrics.coalescedJoins, 3);
+    });
+
+    testWidgets('evict removes every thumbnail of one source only', (_) async {
+      const specA = ThumbnailSpec(maxWidth: 96, maxHeight: 96);
+      const specB = ThumbnailSpec(maxWidth: 128, maxHeight: 128);
+      await engine.getThumbnail(VideoSource.asset(landscape), spec: specA);
+      await engine.getThumbnail(VideoSource.asset(landscape), spec: specB);
+      await engine.getThumbnail(VideoSource.asset(portrait), spec: specA);
+
+      await engine.evict(VideoSource.asset(landscape));
+
+      final a = await engine.getThumbnail(
+        VideoSource.asset(landscape),
+        spec: specA,
+      );
+      final b = await engine.getThumbnail(
+        VideoSource.asset(landscape),
+        spec: specB,
+      );
+      final other = await engine.getThumbnail(
+        VideoSource.asset(portrait),
+        spec: specA,
+      );
+      expect(a.wasCached, isFalse);
+      expect(b.wasCached, isFalse);
+      expect(other.wasCached, isTrue, reason: 'evict must be source-scoped');
+    });
+
+    testWidgets('clearCache forces every source to re-extract', (_) async {
+      const spec = ThumbnailSpec(maxWidth: 88, maxHeight: 88);
+      await engine.getThumbnail(VideoSource.asset(landscape), spec: spec);
+      await engine.getThumbnail(VideoSource.asset(portrait), spec: spec);
+
+      await engine.clearCache();
+
+      final a = await engine.getThumbnail(
+        VideoSource.asset(landscape),
+        spec: spec,
+      );
+      final b = await engine.getThumbnail(
+        VideoSource.asset(portrait),
+        spec: spec,
+      );
+      expect(a.wasCached, isFalse);
+      expect(b.wasCached, isFalse);
+    });
+
+    testWidgets('VideoThumbnailImage resolves inside a widget tree', (
+      tester,
+    ) async {
+      // Goes through ThumbnailEngine.instance: the exact production path.
+      final provider = VideoThumbnailImage(
+        VideoSource.asset(landscape),
+        spec: const ThumbnailSpec(maxWidth: 200, maxHeight: 200),
+      );
+      await tester.pumpWidget(MaterialApp(home: Image(image: provider)));
+      final context = tester.element(find.byType(Image));
+      await precacheImage(provider, context);
+      await tester.pump();
+
+      final rawImage = tester.widget<RawImage>(find.byType(RawImage));
+      expect(rawImage.image, isNotNull);
+      expect(rawImage.image!.width, greaterThan(0));
+      expect(
+        rawImage.image!.width / rawImage.image!.height,
+        closeTo(640 / 360, 0.05),
+        reason: 'aspect ratio must survive the fit box',
       );
     });
   });

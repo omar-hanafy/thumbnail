@@ -1,17 +1,36 @@
 # thumbnail_example
 
-Demonstrates how to use the thumbnail plugin.
+Manual-verification app and test host for the `thumbnail` engine.
 
-## Getting Started
+## Tabs
 
-This project is a starting point for a Flutter application.
+- **Gallery**: one tile per generation path, all rendered through
+  `VideoThumbnailImage`:
+  - bundle assets (landscape + rotated portrait)
+  - local files (fixtures copied to disk, `VideoSource.file`)
+  - direct network links (Big Buck Bunny MP4 / M4V / MOV from
+    download.blender.org)
+  - an HLS stream (`.m3u8`, platform-dependent)
+  - every `ThumbnailSpec` knob: position, exact, PNG, quality, fit box,
+    unconstrained, past-the-end clamping
+  - deliberate failures (404, non-video URL, missing asset) to show
+    classified, bounded error handling
+  - action chips for prefetch, cache clearing, and live engine metrics
+- **Playground**: the direct `ThumbnailEngine` API with interactive
+  controls; shows the raw `Thumbnail` result (dimensions, file size,
+  `wasCached`, latency, path) and drives `prefetch`, `evict`, `clearCache`.
+- **Bench**: cold vs warm runs with configurable request count, size, and
+  concurrency; prints a metrics report.
 
-A few resources to get you started if this is your first Flutter project:
+## Tests
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```sh
+# Host-side tests (no device needed)
+flutter test
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Hermetic on-device suite (loopback HTTP server, no internet needed)
+flutter test integration_test/thumbnail_test.dart -d <device-id>
+
+# Real-internet smoke tests (device must be online; hits blender.org + Mux)
+flutter test integration_test/remote_media_test.dart -d <device-id>
+```
