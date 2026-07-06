@@ -1,6 +1,6 @@
 name: thumbnail
 description: "High-performance video thumbnail engine: cached, scheduled, cancellable thumbnail generation from asset, file, and network videos."
-version: 0.1.0
+version: 0.1.0-dev.1
 homepage: https://github.com/omar-hanafy/thumbnail
 repository: https://github.com/omar-hanafy/thumbnail
 issue_tracker: https://github.com/omar-hanafy/thumbnail/issues

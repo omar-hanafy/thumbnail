@@ -1,6 +1,6 @@
-## 0.1.0
+## 0.1.0-dev.1
 
-Initial release.
+Initial release (prerelease).
 
 - Thumbnail generation from Flutter bundle assets, local files, and http(s)
   URLs (with request headers) on Android and iOS.
