@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the `thumbnail` Flutter plugin: a cached, scheduled, cancellable video-thumbnail engine (assets, files, network URLs) with thin correct Kotlin/Swift extractors, per docs/superpowers/specs/2026-07-06-thumbnail-engine-design.md.
+**Goal:** Build the `thumbnail` Flutter plugin: a cached, scheduled, cancellable video-thumbnail engine (assets, files, network URLs) with thin correct Kotlin/Swift extractors, per doc/superpowers/specs/2026-07-06-thumbnail-engine-design.md.
 
 **Architecture:** Pure-Dart engine (scheduler + disk cache + negative cache + metrics + ImageProvider) over an injectable `ThumbnailExtractor` interface; v1 extractor is Pigeon-generated typed channels into stateless Kotlin (`MediaMetadataRetriever`) and Swift (`AVAssetImageGenerator`) executors. Natives encode straight into engine-chosen `.part` files; Dart commits with atomic renames.
 
