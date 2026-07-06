@@ -149,8 +149,18 @@ void main() {
       expect(extractor.cancelled, [extractor.calls.single.requestId]);
 
       // The sunk-cost result still lands in the cache for the next request.
+      // The orphaned worker commits through real file IO, which event-queue
+      // pumping does not bound; wait for the post-commit metrics signal.
       extractor.release();
-      await pumpEventQueue();
+      final deadline = DateTime.now().add(const Duration(seconds: 10));
+      while (engine.metrics.extractions < 1) {
+        expect(
+          DateTime.now().isBefore(deadline),
+          isTrue,
+          reason: 'orphaned extraction never committed',
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
       final next = await engine.getThumbnail(asset);
       expect(next.wasCached, isTrue);
       expect(extractor.callCount, 1);
