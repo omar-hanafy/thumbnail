@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 String _ms(Duration? d) => d == null ? '-' : '${d.inMilliseconds}ms';
 

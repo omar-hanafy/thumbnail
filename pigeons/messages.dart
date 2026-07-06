@@ -7,10 +7,12 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/pigeon/messages.g.dart',
-    kotlinOut: 'android/src/main/kotlin/tech/tomars/thumbnail/Messages.g.kt',
-    kotlinOptions: KotlinOptions(package: 'tech.tomars.thumbnail'),
-    swiftOut: 'ios/thumbnail/Sources/thumbnail/messages.g.swift',
-    dartPackageName: 'thumbnail',
+    kotlinOut:
+        'android/src/main/kotlin/tech/tomars/cached_video_thumbnail/Messages.g.kt',
+    kotlinOptions: KotlinOptions(package: 'tech.tomars.cached_video_thumbnail'),
+    swiftOut:
+        'ios/cached_video_thumbnail/Sources/cached_video_thumbnail/messages.g.swift',
+    dartPackageName: 'cached_video_thumbnail',
   ),
 )
 /// Kind of video source being extracted from.

@@ -332,7 +332,7 @@ class ThumbnailHostApi {
   /// extractionFailed, encodingFailed, io, cancelled.
   Future<ExtractResult> extract(ExtractRequest request) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.thumbnail.ThumbnailHostApi.extract$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.cached_video_thumbnail.ThumbnailHostApi.extract$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -354,7 +354,7 @@ class ThumbnailHostApi {
   /// Best-effort cancellation of an in-flight extraction (iOS only in v1).
   Future<void> cancel(String requestId) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.thumbnail.ThumbnailHostApi.cancel$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.cached_video_thumbnail.ThumbnailHostApi.cancel$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

@@ -1,4 +1,4 @@
-package tech.tomars.thumbnail_example
+package tech.tomars.cached_video_thumbnail_example
 
 import io.flutter.embedding.android.FlutterActivity
 

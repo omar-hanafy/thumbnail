@@ -3,7 +3,7 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-      - 'thumbnail-v*'
+      - 'cached_video_thumbnail-v*'
   workflow_dispatch:
 
 permissions:

@@ -414,7 +414,7 @@ class ThumbnailHostApiSetup {
     /// Errors are surfaced as `PlatformException` whose `code` is one of:
     /// invalidSource, assetNotFound, fileNotFound, network, unsupportedMedia,
     /// extractionFailed, encodingFailed, io, cancelled.
-    let extractChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.thumbnail.ThumbnailHostApi.extract\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let extractChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.cached_video_thumbnail.ThumbnailHostApi.extract\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       extractChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -432,7 +432,7 @@ class ThumbnailHostApiSetup {
       extractChannel.setMessageHandler(nil)
     }
     /// Best-effort cancellation of an in-flight extraction (iOS only in v1).
-    let cancelChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.thumbnail.ThumbnailHostApi.cancel\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let cancelChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.cached_video_thumbnail.ThumbnailHostApi.cancel\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       cancelChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]

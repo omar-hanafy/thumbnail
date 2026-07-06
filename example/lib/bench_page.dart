@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 /// Benchmark harness: proves where thumbnail time goes on a real device.
 ///

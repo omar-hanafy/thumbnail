@@ -1,4 +1,4 @@
-import 'package:thumbnail/thumbnail.dart';
+import 'package:cached_video_thumbnail/cached_video_thumbnail.dart';
 
 /// One thumbnail to render in the gallery: a source plus the spec to use.
 class DemoEntry {

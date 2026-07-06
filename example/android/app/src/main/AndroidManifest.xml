@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:usesCleartextTraffic="true"
-        android:label="thumbnail_example"
+        android:label="cached_video_thumbnail_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
