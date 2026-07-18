@@ -33,3 +33,14 @@ example/pubspec.lock
 # Internal design and plan documents: tracked in the repo, not shipped in
 # the published package.
 doc/superpowers/
+
+# AI coding-assistant support: the agent plugin is distributed from the git
+# repository (marketplace install), never through the pub archive. Shipping
+# a partial tree (visible skills without the hidden manifests) would be a
+# broken plugin, so the whole tree and its tooling stay out. Hidden dirs
+# (.claude-plugin/, .codex-plugin/, .agents/) are excluded by pub itself.
+agent-plugin/
+doc/ai/
+AGENTS.md
+CLAUDE.md
+tool/validate_agent_plugin.dart

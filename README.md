@@ -6,6 +6,48 @@ cached, scheduled, cancellable pipeline built for one goal: in an infinite,
 fast-flinging feed on a low-end device, thumbnail generation is never the
 reason the UI janks.
 
+## AI coding-assistant support (agent plugin)
+
+This repo ships an installable agent plugin - package-specific skills for
+**Claude Code** and **OpenAI Codex** (Codex CLI and the ChatGPT desktop
+app). It teaches your assistant this exact engine: feed integration with
+physical-pixel specs, error/cache diagnosis, hermetic test setup, and
+migration from the `video_thumbnail` package family. This is developer
+tooling distributed from this Git repository; it is not a runtime feature
+and is not part of the pub.dev archive.
+
+Claude Code:
+
+```sh
+claude plugin marketplace add omar-hanafy/cached_video_thumbnail
+claude plugin install cached-video-thumbnail@cached-video-thumbnail
+```
+
+OpenAI Codex:
+
+```sh
+codex plugin marketplace add omar-hanafy/cached_video_thumbnail
+codex plugin add cached-video-thumbnail@cached-video-thumbnail
+```
+
+Start a new agent session after installing, then try:
+
+- "Add video thumbnails to my feed with cached_video_thumbnail - it must
+  stay smooth on low-end devices."
+- "My thumbnails fail instantly for a minute after one network error - why?"
+- "Write hermetic widget tests for my video tiles."
+- "Migrate this file from video_thumbnail to cached_video_thumbnail."
+
+Skills also trigger explicitly: `/cached-video-thumbnail:integrate-feed-thumbnails`
+in Claude Code, `$integrate-feed-thumbnails` in Codex. Trust note: the
+plugin is instructions and reference files only - no hooks, no MCP
+servers, no executable scripts, no network access; the bundled Claude
+agent is read-only. The plugin version tracks the package version, and its
+skills target 0.1.x. Update with `claude plugin update` /
+`codex plugin marketplace upgrade`; remove with `claude plugin uninstall` /
+`codex plugin remove`. Details, capabilities, and troubleshooting:
+[doc/ai/README.md](https://github.com/omar-hanafy/cached_video_thumbnail/blob/main/doc/ai/README.md).
+
 ## Why another thumbnail package?
 
 Existing packages give you a one-shot `video -> image` call. That is the easy

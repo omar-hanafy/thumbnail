@@ -1,0 +1,19 @@
+{
+  "name": "cached-video-thumbnail",
+  "interface": {
+    "displayName": "Cached Video Thumbnail"
+  },
+  "plugins": [
+    {
+      "name": "cached-video-thumbnail",
+      "source": {
+        "source": "local",
+        "path": "./agent-plugin/cached-video-thumbnail"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
