@@ -1,3 +1,28 @@
+## 0.1.1
+
+No changes to the Dart/native runtime; this release adds repo-distributed
+AI coding-assistant support and maintainer tooling.
+
+- Installable agent plugin for Claude Code and OpenAI Codex, hosted in
+  this repository (`agent-plugin/cached-video-thumbnail`, one shared
+  skills tree, dual manifests, repo-root marketplace catalogs for both
+  clients). Install commands are in the README.
+- Four package-specific skills: `integrate-feed-thumbnails` (feed wiring,
+  physical-pixel specs, priorities, prefetch, audit checklist),
+  `diagnose-thumbnail-issues` (error codes, negative cache, platform
+  quirks, metrics triage), `mock-thumbnail-engine` (hermetic tests with an
+  injectable fake extractor), and `migrate-from-video-thumbnail`
+  (video_thumbnail / flutter_video_thumbnail_plus / get_thumbnail_video /
+  fc_native_video_thumbnail conversions), plus a read-only
+  `thumbnail-integration-auditor` agent for Claude Code.
+- Repository guidance for coding agents (`AGENTS.md`, imported by
+  `CLAUDE.md`) covering validation gates, generated-file rules, the
+  error-code contract, and the release process.
+- CI now validates the plugin tree and version sync
+  (`tool/validate_agent_plugin.dart`); the plugin tree is excluded from
+  the pub archive (`.pubignore`), which is why the package itself is
+  unchanged.
+
 ## 0.1.0
 
 Initial release: a disk-cached, scheduled, cancellable video thumbnail

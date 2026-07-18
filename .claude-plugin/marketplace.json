@@ -1,0 +1,23 @@
+{
+  "name": "cached-video-thumbnail",
+  "owner": {
+    "name": "Omar Hanafy"
+  },
+  "description": "Agent plugin for the cached_video_thumbnail Flutter package",
+  "plugins": [
+    {
+      "name": "cached-video-thumbnail",
+      "source": "./agent-plugin/cached-video-thumbnail",
+      "description": "Package-specific skills for the cached_video_thumbnail Flutter plugin: feed integration and performance tuning, error and cache diagnosis, hermetic testing without native code, and migration from the video_thumbnail package family.",
+      "category": "development",
+      "keywords": [
+        "flutter",
+        "dart",
+        "video",
+        "thumbnail",
+        "cache",
+        "performance"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "cached-video-thumbnail",
+  "displayName": "Cached Video Thumbnail",
+  "version": "0.1.1",
+  "description": "Package-specific skills for the cached_video_thumbnail Flutter plugin: feed integration and performance tuning, error and cache diagnosis, hermetic testing without native code, and migration from the video_thumbnail package family.",
+  "author": {
+    "name": "Omar Hanafy",
+    "url": "https://github.com/omar-hanafy"
+  },
+  "homepage": "https://github.com/omar-hanafy/cached_video_thumbnail",
+  "repository": "https://github.com/omar-hanafy/cached_video_thumbnail",
+  "license": "MIT",
+  "keywords": [
+    "flutter",
+    "dart",
+    "video",
+    "thumbnail",
+    "cache",
+    "performance",
+    "media"
+  ]
+}
